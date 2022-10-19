@@ -1,0 +1,10 @@
+# todo: this should be a workspace meta configuration
+
+[package]
+name = "standalone"
+version = "0.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
