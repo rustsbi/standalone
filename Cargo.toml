@@ -1,7 +1,7 @@
 # todo: this should be a workspace meta configuration
 
 [package]
-name = "standalone"
+name = "rustsbi-standalone"
 version = "0.0.0"
 edition = "2021"
 
