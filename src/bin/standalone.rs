@@ -21,15 +21,18 @@ unsafe extern "C" fn entry() -> ! {
         // 1. Turn off interrupt
         "csrw  mie, zero",
         // 2. Initialize programming langauge runtime
+        // only clear bss if hartid is zero
+        "csrr  t0, mhartid",
+        "bnez  t0, 2f",
         // clear bss segment
         "la  t0, sbss",
         "la  t1, ebss",
         "1:",
-        "bgeu  t0, t1, 1f",
+        "bgeu  t0, t1, 2f",
         "sd  zero, 0(t0)",
         "addi  t0, t0, 8",
         "j  1b",
-        "1:",
+        "2:",
         // 3. Prepare stack for each hart
         "la  sp, {stack}",
         "li  t0, {per_hart_stack_size}",
