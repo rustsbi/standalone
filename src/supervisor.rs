@@ -1,9 +1,19 @@
+use crate::DynRustSBI;
 use core::mem::size_of;
 use memoffset::offset_of;
 
 pub enum Operation {
     Stop,
     SystemReset,
+}
+
+// Hardware thread
+pub struct Hart {
+    context: SupervisorContext,
+    sbi: DynRustSBI,
+    // penglai: DynPenglai,
+    // raven: DynRaven,
+    // dram_hypervisor: DynDramHypervisor,
 }
 
 pub struct SupervisorContext {
