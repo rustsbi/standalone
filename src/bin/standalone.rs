@@ -3,7 +3,7 @@
 #![feature(naked_functions, asm_const)]
 
 use core::sync::atomic::{AtomicBool, Ordering::AcqRel};
-use rustsbi_standalone::print;
+use rustsbi_standalone::{print, Operation};
 use spin::Once;
 
 pub(crate) const LEN_STACK_PER_HART: usize = 16 * 1024;
@@ -51,11 +51,6 @@ unsafe extern "C" fn entry() -> ! {
         finalize = sym finalize,
         options(noreturn)
     )
-}
-
-enum Operation {
-    Stop,
-    SystemReset,
 }
 
 /// rust 入口。
