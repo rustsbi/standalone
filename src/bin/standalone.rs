@@ -18,26 +18,34 @@ unsafe extern "C" fn entry() -> ! {
     static mut SBI_STACK: [u8; LEN_STACK_SBI] = [0; LEN_STACK_SBI];
 
     core::arch::asm!(
-        // Turn off interrupt
-        "  csrw mie,  zero",
-        // Prepare stack for each hart
-        "  la    sp, {stack}
-           li    t0, {per_hart_stack_size}
-           csrr  t1,  mhartid
-           addi  t1,  t1,  1
-        1: add   sp,  sp, t0
-           addi  t1,  t1, -1
-           bnez  t1,  1b",
-        "  call {rust_main}",
-        // Clean up and wait
-        "  call {finalize}
-           bnez  a0,  _start
-        1: wfi
-           j     1b",
+        // 1. Turn off interrupt
+        "csrw  mie, zero",
+        // 2. Initialize programming langauge runtime
+        // clear bss segment
+        "la  t0, sbss",
+        "la  t1, ebss",
+        "1:",
+        "bgeu  t0, t1, 1f",
+        "sd  zero, 0(t0)",
+        "addi  t0, t0, 8",
+        "j  1b",
+        "1:",
+        // 3. Prepare stack for each hart
+        "la  sp, {stack}",
+        "li  t0, {per_hart_stack_size}",
+        "csrr  t1, mhartid",
+        "addi  t1, t1, 1",
+        "1: ",
+        "add  sp, sp, t0",
+        "addi  t1, t1, -1",
+        "bnez  t1, 1b",
+        "j  {rust_main}",
+        // 4. Clean up
+        "j  {finalize}",
         per_hart_stack_size = const LEN_STACK_PER_HART,
-        stack               =   sym SBI_STACK,
-        rust_main           =   sym rust_main,
-        finalize            =   sym finalize,
+        stack = sym SBI_STACK,
+        rust_main = sym rust_main,
+        finalize = sym finalize,
         options(noreturn)
     )
 }
