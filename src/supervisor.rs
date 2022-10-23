@@ -10,12 +10,35 @@ pub enum Operation {
 // Hardware thread
 pub struct Hart {
     context: SupervisorContext,
-    sbi: DynRustSBI,
+    // sbi: DynRustSBI,
     // penglai: DynPenglai,
     // raven: DynRaven,
     // dram_hypervisor: DynDramHypervisor,
 }
 
+impl Hart {
+    pub fn new(a0: usize, a1: usize, sp: usize, pc: usize) -> Self {
+        use riscv::register::mstatus;
+        let mstatus = unsafe {
+            let mstatus: usize;
+            mstatus::set_mpp(mstatus::MPP::Supervisor);
+            mstatus::set_mpie();
+            core::arch::asm!("csrr {}, mstatus", out(reg) mstatus);
+            mstatus
+        };
+        let context = SupervisorContext {
+            mepc: pc,
+            mstatus,
+            a0,
+            a1,
+            sp,
+            ..Default::default()
+        };
+        Self { context }
+    }
+}
+
+#[derive(Default)]
 pub struct SupervisorContext {
     machine_sp: usize,
     ra: usize,
