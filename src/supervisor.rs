@@ -17,7 +17,7 @@ pub struct Hart {
 }
 
 impl Hart {
-    pub fn new(a0: usize, a1: usize, sp: usize, pc: usize) -> Self {
+    pub fn new(a0: usize, a1: usize, pc: usize) -> Self {
         use riscv::register::mstatus;
         let mstatus = unsafe {
             let mstatus: usize;
@@ -31,7 +31,6 @@ impl Hart {
             mstatus,
             a0,
             a1,
-            sp,
             ..Default::default()
         };
         Self { context }

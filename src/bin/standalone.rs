@@ -3,12 +3,13 @@
 #![feature(naked_functions, asm_const)]
 
 use core::sync::atomic::{AtomicBool, Ordering::AcqRel};
-use rustsbi_standalone::{print, Operation};
+use rustsbi_standalone::{print, Hart, Operation};
 use spin::Once;
 
 pub(crate) const LEN_STACK_PER_HART: usize = 16 * 1024;
 pub(crate) const NUM_HART_MAX: usize = 8;
 pub(crate) const LEN_STACK_SBI: usize = LEN_STACK_PER_HART * NUM_HART_MAX;
+pub(crate) const SUPERVISOR_ADDRESS: usize = 0x80200000;
 
 #[naked]
 #[link_section = ".text.entry"]
@@ -105,6 +106,8 @@ extern "C" fn rust_main(_hartid: usize, opaque: usize) -> Operation {
     // } else {
     //     Operation::Stop
     // }
+
+    let hart = Hart::new(riscv::register::mhartid::read(), opaque, SUPERVISOR_ADDRESS);
     todo!()
 }
 

@@ -7,4 +7,4 @@ mod interface;
 mod supervisor;
 
 pub use interface::DynRustSBI;
-pub use supervisor::Operation;
+pub use supervisor::{Hart, Operation};
