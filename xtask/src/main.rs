@@ -8,7 +8,7 @@ use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Layout},
     style::{Color, Modifier, Style},
-    widgets::{Block, Borders, Cell, Row, Table, TableState},
+    widgets::{Block, BorderType, Borders, Cell, Row, Table, TableState},
     Frame, Terminal,
 };
 
@@ -19,8 +19,10 @@ struct App<'a> {
 
 impl<'a> App<'a> {
     fn new() -> App<'a> {
+        let mut state = TableState::default();
+        state.select(Some(usize::MAX)); // workaround for left margins
         App {
-            state: TableState::default(),
+            state,
             #[rustfmt::skip]
             items: vec![
                 vec!["Language", "配置语言", "安装配置程序显示的自然语言"],
@@ -149,6 +151,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .block(
             Block::default()
                 .borders(Borders::ALL)
+                .border_type(BorderType::Rounded)
                 .title(" RustSBI / Standard - 编译选项 "),
         )
         .highlight_style(selected_style)
