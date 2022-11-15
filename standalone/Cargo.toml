@@ -6,8 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rustsbi = { git = "https://github.com/rustsbi/rustsbi", rev = "9ab2ea9d" }
-riscv = "0.9.0"
+rustsbi = "0.3.0"
+fast-trap = { git = "https://github.com/YdrMaster/fast-trap", rev = "ffb40e2", features = [
+    "riscv-m",
+] }
+riscv = "0.10.0"
 spin = "*"
 uart_16550 = { version = "0.2.18", optional = true }
 

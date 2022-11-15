@@ -2,8 +2,15 @@
 #![no_main]
 #![feature(naked_functions, asm_const)]
 
+mod console;
+mod driver;
+mod interface;
+mod supervisor;
+mod trap_vec;
+
+use interface::DynRustSBI;
+use supervisor::{Hart, Operation};
 use core::sync::atomic::{AtomicBool, Ordering::AcqRel};
-use rustsbi_standalone::{print, Hart, Operation};
 use spin::Once;
 
 pub(crate) const LEN_STACK_PER_HART: usize = 16 * 1024;
@@ -44,27 +51,26 @@ unsafe extern "C" fn entry() -> ! {
         "addi  t1, t1, -1",
         "bnez  t1, 1b",
         "j  {rust_main}",
-        // 4. Clean up
-        "j  {finalize}",
+        // 4. Begin environment procedure
+        "j  {trap}",
         per_hart_stack_size = const LEN_STACK_PER_HART,
         stack = sym SBI_STACK,
         rust_main = sym rust_main,
-        finalize = sym finalize,
+        trap = sym trap_vec::trap_vec,
         options(noreturn)
     )
 }
 
 /// rust 入口。
 extern "C" fn rust_main(_hartid: usize, opaque: usize) -> Operation {
-    #[link_section = ".bss.uninit"] // 以免清零
-    static INIT_HART: AtomicBool = AtomicBool::new(false);
+    static INIT_HART: AtomicBool = AtomicBool::new(true);
 
     // static SERIAL: Once<ns16550a::Ns16550a> = Once::new();
     // static BOARD_INFO: Once<BoardInfo> = Once::new();
     static CSR_PRINT: AtomicBool = AtomicBool::new(false);
 
     // 全局初始化过程
-    if !INIT_HART.swap(true, AcqRel) {
+    if INIT_HART.swap(false, AcqRel) {
         // 解析设备树
         // let board_info = BOARD_INFO.call_once(|| device_tree::parse(opaque));
         // let hsm = HSM.call_once(|| qemu_hsm::QemuHsm::new(NUM_HART_MAX, opaque));
@@ -111,24 +117,3 @@ extern "C" fn rust_main(_hartid: usize, opaque: usize) -> Operation {
     todo!()
 }
 
-/// 准备好不可恢复休眠或关闭
-///
-/// 在隔离的环境（汇编）调用，以确保 main 中使用的堆资源完全释放。
-/// （只是作为示例，因为这个版本完全不使用堆）
-unsafe extern "C" fn finalize(op: Operation) -> ! {
-    match op {
-        Operation::Stop => {
-            // HSM.wait().finalize_before_stop();
-            riscv::interrupt::enable();
-            // 从中断响应直接回 entry
-            loop {
-                riscv::asm::wfi();
-            }
-        }
-        Operation::SystemReset => {
-            // TODO 等待其他核关闭
-            // 直接回 entry
-            entry()
-        }
-    }
-}
