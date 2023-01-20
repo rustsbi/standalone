@@ -4,6 +4,7 @@
 
 mod console;
 mod driver;
+mod execute;
 mod interface;
 mod supervisor;
 mod trap_vec;
