@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "standalone",
+    "rom-rt",
     "xtask",
 ]
 default-members = ["xtask"]
