@@ -1,14 +1,21 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+/*
+usage:
+
+#[rom_rt::entry]
+fn main(params: rom_rt::Parameters) -> rom_rt::Handover {
+    /* code */
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+or
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+#[rom_rt::entry]
+fn main(params: rom_rt::Parameters) {
+    /* code */
+    rom_rt::exit(handover)
 }
+*/
+
+mod soc;
+
+#[cfg(any(feature = "allwinner-d1"))]
+pub use soc::Parameters;
