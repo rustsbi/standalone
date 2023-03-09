@@ -14,6 +14,7 @@ fn main(params: rom_rt::Parameters) {
     rom_rt::exit(handover)
 }
 */
+#![feature(naked_functions, asm_const)]
 
 mod soc;
 
