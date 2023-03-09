@@ -6,12 +6,12 @@
 #![no_std]
 #![no_main]
 
+use rom_rt::{Handover, Parameters};
+
 #[rom_rt::entry]
-fn main(params: rom_rt::Parameters) -> rom_rt::Handover {
-    unsafe {
-        core::arch::asm!("nop");
-    }
-    rom_rt::Handover::from(params)
+fn main(params: Parameters) -> Handover {
+    // on most platforms, params has a UART inside.
+    Handover::from(params)
 }
 
 #[panic_handler]
