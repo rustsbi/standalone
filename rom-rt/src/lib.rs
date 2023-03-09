@@ -20,6 +20,7 @@ pub struct Parameters {}
 #[cfg(not(any(feature = "allwinner-d1")))]
 pub struct Handover {}
 
+#[cfg(not(any(feature = "allwinner-d1")))]
 impl From<Parameters> for Handover {
     #[inline]
     fn from(_src: Parameters) -> Self {
