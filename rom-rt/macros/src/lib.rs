@@ -31,7 +31,7 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
                 if let Type::Path(_p) = &*t.ty {
                     // empty
                 } else {
-                    return parse::Error::new(t.ty.span(), "argument type must be usize")
+                    return parse::Error::new(t.ty.span(), "argument type must be a path")
                         .to_compile_error()
                         .into();
                 }

@@ -16,6 +16,7 @@ pub struct Handover {
 }
 
 impl From<Parameters> for Handover {
+    #[inline]
     fn from(src: Parameters) -> Self {
         Handover { uart: src.uart }
     }
