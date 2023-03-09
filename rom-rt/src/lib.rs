@@ -20,3 +20,8 @@ mod soc;
 
 #[cfg(any(feature = "allwinner-d1"))]
 pub use soc::Parameters;
+
+#[cfg(not(any(feature = "allwinner-d1")))]
+pub struct Parameters {}
+
+pub use rom_rt_macros::entry;

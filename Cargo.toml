@@ -2,6 +2,7 @@
 members = [
     "standalone",
     "rom-rt",
+    "rom-rt/macros",
     "xtask",
 ]
 default-members = ["xtask"]
