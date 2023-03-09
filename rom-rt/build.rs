@@ -7,7 +7,7 @@ fn main() {
     println!("cargo:rustc-link-arg=-T{}", ld.display());
 }
 
-#[cfg_attr(not(feature = "allwinner-d1"), allow(unused))]
+#[cfg(feature = "allwinner-d1")]
 const LINKER_ALLWINNER_D1: &[u8] = b"
 OUTPUT_ARCH(riscv)
 ENTRY(head_jump)

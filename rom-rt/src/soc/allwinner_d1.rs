@@ -40,8 +40,8 @@ pub struct EgonHead {
 ///
 /// NOTE: `mxstatus` is a custom T-Head register. Do not confuse with `mstatus`.
 /// It allows for configuring special eXtensions. See further below for details.
-#[cfg(target_arch = "riscv64")]
 #[naked]
+#[allow(unused)] // used by linker script
 #[link_section = ".text.entry"]
 unsafe extern "C" fn start() -> ! {
     const STACK_SIZE: usize = 1024;
@@ -99,9 +99,23 @@ extern "Rust" {
     fn main();
 }
 
-#[cfg(target_arch = "riscv64")]
-#[naked]
 #[no_mangle]
+#[link_section = ".head.egon"]
+static EGON_HEAD: EgonHead = EgonHead {
+    magic: *b"eGON.BT0",
+    checksum: 0x5F0A6C39, // real checksum filled by blob generator
+    length: 0x8000,
+    _head_size: 0,
+    fel_script_address: 0,
+    fel_uenv_length: 0,
+    dt_name_offset: 0,
+    dram_size: 0,
+    boot_media: 0,
+    string_pool: [0; 13],
+};
+
+#[naked]
+#[export_name = "head_jump"]
 #[link_section = ".head.text"]
 unsafe extern "C" fn head_jump() -> ! {
     asm!(
@@ -113,7 +127,6 @@ unsafe extern "C" fn head_jump() -> ! {
     )
 }
 
-#[cfg(target_arch = "riscv64")]
 #[naked]
 unsafe extern "C" fn head_swap() {
     asm!(
