@@ -1,6 +1,6 @@
-# RustSBI Service
+# RustSBI supervisor service
 
-This is the module which runs on backend to provide SBI or other interface features.
+This is the module which runs on backend to provide interface features over SBI.
 It should be loaded by `rom-rt` project and run on supervisor S-mode.
 
 ## LinuxBoot

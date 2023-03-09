@@ -1,6 +1,6 @@
 [package]
-name = "rustsbi-service"
-description = "RustSBI Prototyping System service runtime"
+name = "rustsbi-supervisor"
+description = "RustSBI Prototyping System supervisor runtime"
 version = "0.1.0"
 edition = "2021"
 
