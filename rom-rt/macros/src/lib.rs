@@ -1,6 +1,8 @@
-use quote::quote;
 use proc_macro2::Span;
-use syn::{parse, parse_macro_input, spanned::Spanned, FnArg, ItemFn, ReturnType, Type, Visibility};
+use quote::quote;
+use syn::{
+    parse, parse_macro_input, spanned::Spanned, FnArg, ItemFn, ReturnType, Type, Visibility,
+};
 
 use proc_macro::TokenStream;
 
@@ -16,7 +18,9 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
         )
         .to_compile_error()
         .into();
-    }    for arg in &f.sig.inputs {
+    }
+
+    for arg in &f.sig.inputs {
         match arg {
             FnArg::Receiver(_) => {
                 return parse::Error::new(arg.span(), "invalid argument")
@@ -45,11 +49,13 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
         && f.sig.variadic.is_none()
         && match f.sig.output {
             ReturnType::Default => true,
-            ReturnType::Type(_, ref ty) => if let Type::Path(_path) = &**ty {
-                true
-            } else {
-                false
-            },
+            ReturnType::Type(_, ref ty) => {
+                if let Type::Path(_path) = &**ty {
+                    true
+                } else {
+                    false
+                }
+            }
         };
 
     if !valid_signature {
