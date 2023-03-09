@@ -4,8 +4,8 @@
 //! It would be checked, formatted and tested under any architecture,
 //! i.e. should not include architecture specific code.
 
-#[cfg_attr(not(feature = "allwinner-d1"), allow(unused))]
+#[cfg(feature = "allwinner-d1")]
 mod allwinner_d1;
 
 #[cfg(feature = "allwinner-d1")]
-pub use allwinner_d1::Parameters;
+pub use allwinner_d1::{Handover, Parameters};

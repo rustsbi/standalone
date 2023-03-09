@@ -1,8 +1,22 @@
 //! Allwinner D1 specific ROM parameters and handoff structure
 use core::arch::asm;
 
-/// Allwinner D1 ROM parameters
-pub struct Parameters {}
+/// Allwinner D1 ROM parameters.
+pub struct Parameters {
+    // FIXME: modify to HAL structure
+    pub uart: d1_pac::UART0,
+}
+
+/// Return ownership of structures passed from `Parameters`.
+pub struct Handover {
+    pub uart: d1_pac::UART0,
+}
+
+impl From<Parameters> for Handover {
+    fn from(src: Parameters) -> Self {
+        Handover { uart: src.uart }
+    }
+}
 
 #[repr(C)]
 pub struct EgonHead {

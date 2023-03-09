@@ -8,6 +8,8 @@ edition = "2021"
 
 [dependencies]
 rom-rt-macros = { path = "macros" }
+d1-pac = { version = "0.0.31", optional = true }
 
 [features]
-allwinner-d1 = []
+allwinner-d1 = ["dep:d1-pac"]
+doc = ["dep:d1-pac"]

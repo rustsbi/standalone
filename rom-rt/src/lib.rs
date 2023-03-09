@@ -20,9 +20,12 @@ fn main(params: rom_rt::Parameters) {
 mod soc;
 
 #[cfg(any(feature = "allwinner-d1"))]
-pub use soc::Parameters;
+pub use soc::{Handover, Parameters};
 
 #[cfg(not(any(feature = "allwinner-d1")))]
 pub struct Parameters {}
+
+#[cfg(not(any(feature = "allwinner-d1")))]
+pub struct Handover {}
 
 pub use rom_rt_macros::entry;

@@ -77,12 +77,13 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
     let unsafety = f.sig.unsafety;
     let args = f.sig.inputs;
     let stmts = f.block.stmts;
+    let ret = f.sig.output;
 
     quote!(
         #[allow(non_snake_case)]
         #[export_name = "main"]
         #(#attrs)*
-        pub #unsafety fn __rom_rt__main(#args) {
+        pub #unsafety fn __rom_rt__main(#args) #ret {
             #(#stmts)*
         }
     )
