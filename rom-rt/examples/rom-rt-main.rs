@@ -6,6 +6,9 @@
 
 #[rom_rt::entry]
 fn main(params: rom_rt::Parameters) -> rom_rt::Handover {
+    unsafe {
+        core::arch::asm!("nop");
+    }
     rom_rt::Handover::from(params)
 }
 

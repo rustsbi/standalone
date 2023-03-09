@@ -16,11 +16,9 @@ MEMORY {
 }
 SECTIONS {
     .head : {
-        KEEP(*(.head.text))
+        KEEP(*(.text.head))
         KEEP(*(.head.egon))
-        KEEP(*(.head.jump))
         . = ALIGN(4);
-        shmeta = .;
         KEEP(*(.head.meta))
         . = ALIGN(128);
         KEEP(*(.magic.tail))
