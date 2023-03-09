@@ -4,4 +4,4 @@
 mod smp;
 
 // Symmetric multiprocessor with management core
-// mod smp_mg; 
+// mod smp_mg;

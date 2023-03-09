@@ -20,4 +20,11 @@ pub struct Parameters {}
 #[cfg(not(any(feature = "allwinner-d1")))]
 pub struct Handover {}
 
+impl From<Parameters> for Handover {
+    #[inline]
+    fn from(_src: Parameters) -> Self {
+        Handover {}
+    }
+}
+
 pub use rom_rt_macros::entry;

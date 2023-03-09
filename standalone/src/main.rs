@@ -9,10 +9,10 @@ mod interface;
 mod supervisor;
 mod trap_vec;
 
-use interface::DynRustSBI;
-use supervisor::{Hart, Operation};
 use core::sync::atomic::{AtomicBool, Ordering::AcqRel};
+use interface::DynRustSBI;
 use spin::Once;
+use supervisor::{Hart, Operation};
 
 pub(crate) const LEN_STACK_PER_HART: usize = 16 * 1024;
 pub(crate) const NUM_HART_MAX: usize = 8;
@@ -117,4 +117,3 @@ extern "C" fn rust_main(_hartid: usize, opaque: usize) -> Operation {
     let hart = Hart::new(riscv::register::mhartid::read(), opaque, SUPERVISOR_ADDRESS);
     todo!()
 }
-
