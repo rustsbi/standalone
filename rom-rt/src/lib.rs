@@ -15,6 +15,7 @@ fn main(params: rom_rt::Parameters) {
 }
 */
 #![feature(naked_functions, asm_const)]
+#![no_std]
 
 mod soc;
 
