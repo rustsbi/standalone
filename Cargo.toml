@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "standalone",
+    "service",
     "rom-rt",
     "rom-rt/macros",
     "xtask",
