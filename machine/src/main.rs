@@ -1,13 +1,11 @@
 #![no_std]
 #![no_main]
 
-use rom_rt::entry;
-use rom_rt::{Handover, Parameters};
+use rom_rt::{entry, println, Handover, Parameters};
 
 #[entry]
 fn main(params: Parameters) -> Handover {
-    #[cfg(feature = "allwinner-d1")]
-    {} // todo: use serial
+    println!("Hello world!").ok();
     Handover::from(params)
 }
 

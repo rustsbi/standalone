@@ -3,6 +3,7 @@ members = [
     "standalone",
     "machine",
     "supervisor",
+    "hal/d1-hal",
     "rom-rt",
     "rom-rt/macros",
     "xtask",

@@ -14,6 +14,10 @@ mod soc;
 #[cfg(any(feature = "allwinner-d1"))]
 pub use soc::{Handover, Parameters};
 
+#[cfg(all(feature = "allwinner-d1", feature = "log"))]
+#[doc(hidden)]
+pub use soc::log;
+
 #[cfg(not(any(feature = "allwinner-d1")))]
 pub struct Parameters {}
 
@@ -29,3 +33,18 @@ impl From<Parameters> for Handover {
 }
 
 pub use rom_rt_macros::entry;
+
+#[cfg(not(any(feature = "allwinner-d1")))]
+#[macro_export(local_inner_macros)]
+macro_rules! println {
+    ($($arg:tt)*) => {
+        // empty.
+    };
+}
+#[cfg(not(any(feature = "allwinner-d1")))]
+#[macro_export(local_inner_macros)]
+macro_rules! print {
+    ($($arg:tt)*) => {
+        // empty.
+    };
+}
