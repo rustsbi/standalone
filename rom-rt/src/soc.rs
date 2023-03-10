@@ -7,8 +7,8 @@
 #[cfg(feature = "allwinner-d1")]
 mod allwinner_d1;
 
-#[cfg(feature = "allwinner-d1")]
-pub use allwinner_d1::{Handover, Parameters};
 #[cfg(all(feature = "allwinner-d1", feature = "log"))]
 #[doc(hidden)]
 pub use allwinner_d1::log;
+#[cfg(feature = "allwinner-d1")]
+pub use allwinner_d1::{Handover, Parameters};

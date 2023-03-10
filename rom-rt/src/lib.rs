@@ -39,6 +39,7 @@ pub use rom_rt_macros::entry;
 macro_rules! println {
     ($($arg:tt)*) => {
         // empty.
+        Ok::<(), ()>(())
     };
 }
 #[cfg(not(any(feature = "allwinner-d1")))]
@@ -46,5 +47,6 @@ macro_rules! println {
 macro_rules! print {
     ($($arg:tt)*) => {
         // empty.
+        Ok::<(), ()>(())
     };
 }
