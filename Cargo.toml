@@ -4,8 +4,8 @@ members = [
     "machine",
     "supervisor",
     "hal/d1-hal",
-    "rom-rt",
-    "rom-rt/macros",
+    "d1-rom-rt",
+    "d1-rom-rt/macros",
     "xtask",
 ]
 default-members = ["xtask"]

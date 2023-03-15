@@ -3,13 +3,12 @@ use std::{env, path::PathBuf};
 fn main() {
     let out = PathBuf::from(env::var_os("OUT_DIR").unwrap());
     let ld = &out.join("rom-rt.ld");
-    #[cfg(feature = "allwinner-d1")]
+
     std::fs::write(ld, LINKER_ALLWINNER_D1).unwrap();
     println!("cargo:rustc-link-arg=-T{}", ld.display());
     println!("cargo:rustc-link-search={}", out.display());
 }
 
-#[cfg(feature = "allwinner-d1")]
 const LINKER_ALLWINNER_D1: &[u8] = b"
 OUTPUT_ARCH(riscv)
 ENTRY(head_jump)

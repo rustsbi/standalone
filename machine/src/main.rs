@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 
-use rom_rt::{entry, println, Handover, Parameters};
+use d1_rom_rt::{entry, println, Handover, Parameters};
 
 #[entry]
 fn main(params: Parameters) -> Handover {
