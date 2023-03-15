@@ -4,6 +4,7 @@ members = [
     "machine",
     "supervisor",
     "hal/d1-hal",
+    "hal/aw-mctl",
     "rom-rt",
     "rom-rt/macros",
     "xtask",
