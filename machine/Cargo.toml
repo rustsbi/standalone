@@ -6,8 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rom-rt = { path = "../rom-rt", features = ["log"]}
+d1-rom-rt = { path = "../d1-rom-rt", features = ["log"]}
 ufmt = { version = "0.2.0", optional = true }
 
-[features]
-allwinner-d1 = ["rom-rt/allwinner-d1", "dep:ufmt"]

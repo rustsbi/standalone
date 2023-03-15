@@ -1,21 +1,24 @@
-//! Allwinner D1 specific ROM parameters and handoff structure
-// Ref: rustsbi/rustsbi-d1 project
+/*
+usage:
 
+#[rom_rt::entry]
+fn main(params: rom_rt::Parameters) -> rom_rt::Handover {
+    /* code */
+}
+*/
+#![feature(naked_functions, asm_const)]
+#![no_std]
 use core::arch::asm;
-#[cfg(not(feature = "log"))]
-use d1_hal::gpio::{
-    portb::{PB8, PB9},
-    Function,
-};
+use d1_hal::gpio::portb::PB8;
+use d1_hal::gpio::portb::PB9;
+use d1_hal::gpio::Function;
 
-/// Allwinner D1 ROM parameters.
 pub struct Parameters {
     #[cfg(not(feature = "log"))]
     pub uart: d1_hal::uart::Serial<d1_pac::UART0, (PB8<Function<6>>, PB9<Function<6>>)>,
     pub memory_meta: &'static mut Meta,
 }
 
-/// Return ownership of structures passed from `Parameters`.
 pub struct Handover {
     #[cfg(not(feature = "log"))]
     pub uart: d1_hal::uart::Serial<d1_pac::UART0, (PB8<Function<6>>, PB9<Function<6>>)>,
@@ -35,6 +38,8 @@ impl From<Parameters> for Handover {
         }
     }
 }
+
+pub use rom_rt_macros::entry;
 
 pub struct Meta {
     pub from_flash: bool,
