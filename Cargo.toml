@@ -6,6 +6,7 @@ members = [
     "hal/d1-hal",
     "d1-rom-rt",
     "d1-rom-rt/macros",
+    "hal/aw-mctl",
     "xtask",
 ]
 default-members = ["xtask"]
