@@ -1,3 +1,4 @@
+use base_address::{BaseAddress, Dynamic, Static};
 use volatile_register::RW;
 
 use super::COM;
@@ -40,7 +41,33 @@ pub struct Config {
     // rank: u8,
 }
 
-impl<const A: usize> COM<A> {
+impl<const B: usize> COM<Static<B>> {
+    /// Create a peripheral instance from statically known address.
+    ///
+    /// This function is unsafe for it forces to seize ownership from possible
+    /// wrapped peripheral group types. Users should normally retrieve ownership
+    /// from wrapped types.
+    #[inline]
+    pub const unsafe fn steal_static() -> COM<Static<B>> {
+        COM { base: Static::<B> }
+    }
+}
+
+impl COM<Dynamic> {
+    /// Create a peripheral instance from dynamically known address.
+    ///
+    /// This function is unsafe for it forces to seize ownership from possible
+    /// wrapped peripheral group types. Users should normally retrieve ownership
+    /// from wrapped types.
+    #[inline]
+    pub unsafe fn steal_dynamic(base: *const ()) -> COM<Dynamic> {
+        COM {
+            base: Dynamic::new(base as usize),
+        }
+    }
+}
+
+impl<A: BaseAddress> COM<A> {
     /// Configure dram settings
     #[inline]
     pub fn configure(&self, config: Config) {
