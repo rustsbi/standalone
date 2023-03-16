@@ -39,7 +39,7 @@ impl From<Parameters> for Handover {
     }
 }
 
-pub use rom_rt_macros::entry;
+pub use d1_rom_rt_macros::entry;
 
 pub struct Meta {
     pub from_flash: bool,
