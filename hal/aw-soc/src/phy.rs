@@ -1,3 +1,4 @@
+use base_address::{BaseAddress, Dynamic, Static};
 use volatile_register::{RO, RW};
 
 use super::PHY;
@@ -94,7 +95,33 @@ pub enum DqWidth {
     X16,
 }
 
-impl<const A: usize> PHY<A> {
+impl<const B: usize> PHY<Static<B>> {
+    /// Create a peripheral instance from statically known address.
+    ///
+    /// This function is unsafe for it forces to seize ownership from possible
+    /// wrapped peripheral group types. Users should normally retrieve ownership
+    /// from wrapped types.
+    #[inline]
+    pub const unsafe fn steal_static() -> PHY<Static<B>> {
+        PHY { base: Static::<B> }
+    }
+}
+
+impl PHY<Dynamic> {
+    /// Create a peripheral instance from dynamically known address.
+    ///
+    /// This function is unsafe for it forces to seize ownership from possible
+    /// wrapped peripheral group types. Users should normally retrieve ownership
+    /// from wrapped types.
+    #[inline]
+    pub unsafe fn steal_dynamic(base: *const ()) -> PHY<Dynamic> {
+        PHY {
+            base: Dynamic::new(base as usize),
+        }
+    }
+}
+
+impl<A: BaseAddress> PHY<A> {
     #[inline]
     pub fn dqs_gate_detect(&self) {
         let pgsr0 = self.pgsr[0].read();
