@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 tui = "0.19"
 crossterm = "0.25"
+sys-locale = "0.2.4"
+once_cell = "1.17.1"
