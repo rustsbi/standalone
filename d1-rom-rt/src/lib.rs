@@ -1,17 +1,21 @@
 /*
 usage:
 
-#[rom_rt::entry]
-fn main(params: rom_rt::Parameters) -> rom_rt::Handover {
+use d1_rom_rt::{entry, Parameters, Handover};
+
+#[entry]
+fn main(params: Parameters) -> Handover {
     /* code */
 }
 */
 #![feature(naked_functions, asm_const)]
 #![no_std]
 use core::arch::asm;
-use d1_hal::gpio::portb::PB8;
-use d1_hal::gpio::portb::PB9;
-use d1_hal::gpio::Function;
+#[cfg(not(feature = "log"))]
+use d1_hal::gpio::{
+    portb::{PB8, PB9},
+    Function,
+};
 
 pub struct Parameters {
     #[cfg(not(feature = "log"))]
@@ -197,11 +201,14 @@ pub mod log {
     }
 }
 
+#[doc(hidden)]
+pub extern crate ufmt;
+
 #[cfg(feature = "log")]
 #[macro_export(local_inner_macros)]
 macro_rules! print {
     ($($arg:tt)*) => ({
-        extern crate ufmt;
+        pub use $crate::ufmt as ufmt;
         let mut logger = $crate::log::LOGGER.wait().inner.lock();
         let ans = ufmt::uwrite!(logger, $($arg)*);
         drop(logger);
@@ -214,7 +221,7 @@ macro_rules! print {
 macro_rules! println {
     () => ($crate::print!("\r\n"));
     ($fmt: literal $(, $($arg: tt)+)?) => ({
-        extern crate ufmt;
+        pub use $crate::ufmt as ufmt;
         let mut logger = $crate::log::LOGGER.wait().inner.lock();
         let ans = ufmt::uwrite!(logger, $fmt $(, $($arg)+)?);
         drop(logger);

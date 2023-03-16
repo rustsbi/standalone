@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "standalone",
+    # "standalone", # to be removed after rearrangement
     "machine",
     "supervisor",
     "hal/d1-hal",

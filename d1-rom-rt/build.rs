@@ -2,7 +2,7 @@ use std::{env, path::PathBuf};
 
 fn main() {
     let out = PathBuf::from(env::var_os("OUT_DIR").unwrap());
-    let ld = &out.join("rom-rt.ld");
+    let ld = &out.join("d1-rom-rt.ld");
 
     std::fs::write(ld, LINKER_ALLWINNER_D1).unwrap();
     println!("cargo:rustc-link-arg=-T{}", ld.display());
