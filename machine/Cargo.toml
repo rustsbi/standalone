@@ -6,4 +6,3 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-d1-rom-rt = { path = "../d1-rom-rt", features = ["log"]}
