@@ -1,5 +1,5 @@
 [package]
-name = "rom-rt-macros"
+name = "d1-rom-rt-macros"
 version = "0.1.0"
 edition = "2021"
 

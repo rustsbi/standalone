@@ -7,7 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rom-rt-macros = { path = "macros" }
+d1-rom-rt-macros = { path = "macros" }
 d1-hal = { path = "../hal/d1-hal" }
 d1-pac = "0.0.31"
 embedded-hal = "1.0.0-alpha.9"
