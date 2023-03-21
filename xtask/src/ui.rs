@@ -3,11 +3,16 @@ mod home;
 pub use home::draw_home;
 mod language;
 pub use language::draw_language;
+mod bootstrap;
+pub use bootstrap::draw_bootstrap;
+mod sample_program;
+pub use sample_program::draw_sample_program;
 mod machine_mode;
 pub use machine_mode::draw_machine_mode;
 mod platform_support;
 pub use platform_support::draw_platform_support;
-
+mod allwinner_d1_series;
+pub use allwinner_d1_series::draw_allwinner_d1_series;
 mod standard_sbi_features;
 pub use standard_sbi_features::draw_standard_sbi_features;
 

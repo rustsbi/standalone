@@ -1,16 +1,18 @@
 use core::mem;
+use serde::{Deserialize, Serialize};
 use std::ops::ControlFlow;
 use tui::widgets::TableState;
 
 pub struct App {
     current_navigation: Route,
     navigation_stack: Vec<Route>,
-    pub item_length: usize,
-    pub control_flow_fn: Option<fn(usize, &mut App) -> ControlFlow<(), ()>>,
+    pub(crate) item_length: usize,
+    pub(crate) control_flow_fn: Option<fn(usize, &mut App) -> ControlFlow<(), ()>>,
     pub locale: String,
+    pub bootstrap: Bootstrap,
     pub standard_sbi_enabled: StandardSbiEnabled,
+    pub platform: Option<Platform>,
     pub supervisor_mode_brief: String,
-    pub platform_support_brief: String,
     pub bootload_media_brief: String,
     pub compile_flags_brief: String,
     pub help_ver_about_brief: String,
@@ -86,6 +88,18 @@ impl App {
     pub fn language_brief(&self) -> String {
         crate::locale::get_string("language.display.current", &self.locale).to_string()
     }
+    pub fn bootstrap_brief(&self) -> String {
+        // when we have other programs, change this function
+        self.sample_program_brief()
+    }
+    pub fn sample_program_brief(&self) -> String {
+        let idx = match self.bootstrap {
+            Bootstrap::SampleProgram(SampleProgram::HelloWorld) => "sample-program.hello-world",
+            #[allow(unreachable_patterns)] // remove when jump-to-dram is supported
+            _ => "sample-program.not-sample-program",
+        };
+        crate::locale::get_string(idx, &self.locale).to_string()
+    }
     pub fn standard_sbi_brief(&self) -> String {
         let idx = if self.standard_sbi_enabled.sbi_v1p0_ready() {
             "standard-sbi-features.v1p0-prepared"
@@ -97,23 +111,49 @@ impl App {
         crate::locale::get_string(idx, &self.locale).to_string()
     }
     pub fn machine_mode_brief(&self) -> String {
-        // in future when we have custom sbi features here, change this function
-        self.standard_sbi_brief()
+        if !self.bootstrap.is_machine_mode_supported() {
+            let idx = "machine-mode.not-supported";
+            crate::locale::get_string(idx, &self.locale).to_string()
+        } else {
+            // in future when we have custom sbi features here, change this function
+            self.standard_sbi_brief()
+        }
+    }
+    pub fn platform_support_brief(&self) -> String {
+        let idx = match self.platform {
+            None => "platform-support.no-platform-chosen",
+            Some(Platform::AllwinnerD1Series) => "platform-support.allwinner-d1-series",
+        };
+        crate::locale::get_string(idx, &self.locale).to_string()
+    }
+}
+
+impl From<crate::Config> for App {
+    fn from(value: crate::Config) -> Self {
+        App {
+            locale: value
+                .locale
+                .unwrap_or_else(|| sys_locale::get_locale().unwrap_or("zh-CN".to_string())),
+            bootstrap: value.bootstrap,
+            standard_sbi_enabled: value.standard_sbi_enabled.unwrap_or_default(),
+            platform: value.platform,
+            ..Default::default()
+        }
     }
 }
 
 impl Default for App {
     fn default() -> Self {
-        let locale = sys_locale::get_locale().unwrap_or("zh-CN".to_string());
         App {
             current_navigation: Route::from_route_id(RouteId::Home),
             navigation_stack: Vec::new(),
             item_length: 0,
             control_flow_fn: None,
-            locale,
+            locale: "zh-CN".to_string(),
+            bootstrap: Bootstrap::SampleProgram(SampleProgram::HelloWorld),
+            platform: None,
             standard_sbi_enabled: StandardSbiEnabled::default(),
             supervisor_mode_brief: String::new(),
-            platform_support_brief: String::new(),
             bootload_media_brief: String::new(),
             compile_flags_brief: String::new(),
             help_ver_about_brief: String::new(),
@@ -125,13 +165,18 @@ impl Default for App {
 pub enum RouteId {
     Home,
     Language,
+    Bootstrap,
     MachineMode,
     SupervisorMode,
     PlatformSupport,
     BootloadMedia,
     CompileFlags,
     HelpVerAbout,
+    SampleProgram,
     StandardSbiFeat,
+
+    // route for each platform:
+    AllwinnerD1Series,
 }
 
 #[derive(Debug)]
@@ -148,7 +193,25 @@ impl Route {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Bootstrap {
+    SampleProgram(SampleProgram),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum SampleProgram {
+    HelloWorld,
+}
+
+impl Bootstrap {
+    fn is_machine_mode_supported(&self) -> bool {
+        // when Jump-to-dram implemented, set to true if not matches SampleProgram
+        false
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StandardSbiEnabled {
     pub timer: bool,
     pub ipi: bool,
@@ -177,6 +240,32 @@ impl Default for StandardSbiEnabled {
             hsm: true,
             srst: true,
             pmu: true,
+        }
+    }
+}
+
+pub trait IsSupported {
+    fn is_bootstrap_supported(&self, bootstrap: &Bootstrap) -> bool;
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Platform {
+    AllwinnerD1Series,
+}
+
+impl IsSupported for Platform {
+    fn is_bootstrap_supported(&self, bootstrap: &Bootstrap) -> bool {
+        match (self, bootstrap) {
+            (Self::AllwinnerD1Series, Bootstrap::SampleProgram(SampleProgram::HelloWorld)) => true,
+        }
+    }
+}
+
+impl IsSupported for Option<Platform> {
+    fn is_bootstrap_supported(&self, bootstrap: &Bootstrap) -> bool {
+        match self {
+            Some(p) => p.is_bootstrap_supported(bootstrap),
+            None => false,
         }
     }
 }
