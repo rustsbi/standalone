@@ -4,6 +4,7 @@ use volatile_register::RW;
 use super::COM;
 
 /// Common control peripheral
+#[repr(C)]
 pub struct RegisterBlock {
     pub work_mode_0: RW<u32>, // 0x00
     pub work_mode_1: RW<u32>, // 0x04
