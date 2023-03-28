@@ -9,6 +9,7 @@ members = [
     "d1-rom-rt/macros",
     "hal/aw-soc",
     "hal/base-address",
+    "hal/flashes",
     "xtask",
 ]
 default-members = ["xtask"]
