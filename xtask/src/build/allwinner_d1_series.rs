@@ -52,6 +52,7 @@ pub fn flash_allwinner_d1_series() {
 fn bootstrap_features_from_config(config: &Config) -> Vec<&'static str> {
     match config.bootstrap {
         Bootstrap::SampleProgram(SampleProgram::HelloWorld) => vec!["sample-hello-world"],
+        Bootstrap::SampleProgram(SampleProgram::SpiFlash) => vec!["sample-spi-flash"],
     }
 }
 

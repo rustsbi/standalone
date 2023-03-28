@@ -95,6 +95,7 @@ impl App {
     pub fn sample_program_brief(&self) -> String {
         let idx = match self.bootstrap {
             Bootstrap::SampleProgram(SampleProgram::HelloWorld) => "sample-program.hello-world",
+            Bootstrap::SampleProgram(SampleProgram::SpiFlash) => "sample-program.spi-flash",
             #[allow(unreachable_patterns)] // remove when jump-to-dram is supported
             _ => "sample-program.not-sample-program",
         };
@@ -202,6 +203,7 @@ pub enum Bootstrap {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SampleProgram {
     HelloWorld,
+    SpiFlash,
 }
 
 impl Bootstrap {
@@ -257,6 +259,7 @@ impl IsSupported for Platform {
     fn is_bootstrap_supported(&self, bootstrap: &Bootstrap) -> bool {
         match (self, bootstrap) {
             (Self::AllwinnerD1Series, Bootstrap::SampleProgram(SampleProgram::HelloWorld)) => true,
+            (Self::AllwinnerD1Series, Bootstrap::SampleProgram(SampleProgram::SpiFlash)) => true,
         }
     }
 }

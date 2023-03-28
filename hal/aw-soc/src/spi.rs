@@ -32,7 +32,6 @@ pub struct RegisterBlock {
     pub rxd: RW<u32>,
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::RegisterBlock;

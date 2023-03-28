@@ -12,3 +12,4 @@ d1-rom-rt = { path = "../d1-rom-rt", features = ["log"]}
 default = ["jump-to-dram"]
 jump-to-dram = []
 sample-hello-world = []
+sample-spi-flash = []
