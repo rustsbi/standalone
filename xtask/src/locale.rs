@@ -29,6 +29,7 @@ static LOCALE: Lazy<HashMap<&'static str, HashMap<&'static str, &'static str>>> 
     ("sample-program.chosen", [("zh-CN", "已选中"), ("en-US", "Chosen")].into()),
     ("sample-program.not-chosen", [("zh-CN", "未选中"), ("en-US", "Not chosen")].into()),
     ("sample-program.hello-world", [("zh-CN", "Hello World 示例程序"), ("en-US", "Hello World sample program")].into()),
+    ("sample-program.spi-flash", [("zh-CN", "SPI 闪存示例程序"), ("en-US", "SPI flash sample program")].into()),
     ("sample-program.not-sample-program", [("zh-CN", "不使用示例程序"), ("en-US", "Not using sample programs")].into()),
     ("machine-mode.title", [("zh-CN", " RustSBI 原型设计系统 - 机器态功能 "), ("en-US", " RustSBI Prototyping System - Machine mode features ")].into()),
     ("machine-mode.standard-sbi", [("zh-CN", "标准 SBI 功能"), ("en-US", "Standard SBI features")].into()),

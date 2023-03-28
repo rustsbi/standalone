@@ -5,3 +5,5 @@
 mod jump_to_dram;
 #[cfg(feature = "sample-hello-world")]
 mod sample_hello_world;
+#[cfg(feature = "sample-spi-flash")]
+mod sample_spi_flash;

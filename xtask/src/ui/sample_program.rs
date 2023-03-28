@@ -1,5 +1,5 @@
 use crate::{
-    app::{Bootstrap, SampleProgram},
+    app::{Bootstrap, SampleProgram::*},
     ui::Builder,
     App,
 };
@@ -18,17 +18,20 @@ where
     }
     let hello_world = choose_str(matches!(
         app.bootstrap,
-        Bootstrap::SampleProgram(SampleProgram::HelloWorld)
+        Bootstrap::SampleProgram(HelloWorld)
     ));
+    let spi_flash = choose_str(matches!(app.bootstrap, Bootstrap::SampleProgram(SpiFlash)));
     #[rustfmt::skip]
     let items = vec![
-        vec!["HelloWorld".to_string(), "sample-program.hello-world".to_string(), hello_world.to_string(), ">".to_string()],
-        vec!["Back".to_string(), "back".to_string(), "".to_string(), "".to_string()],
+        vec!["HelloWorld".to_string(), "sample-program.hello-world".to_string(), hello_world.to_string()],
+        vec!["SpiFlash".to_string(), "sample-program.spi-flash".to_string(), spi_flash.to_string()],
+        vec!["Back".to_string(), "back".to_string(), "".to_string()],
     ];
-    fn bootstrap_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
+    fn sample_program_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {
-            0 => app.bootstrap = Bootstrap::SampleProgram(SampleProgram::HelloWorld),
-            1 => return ControlFlow::Break(()),
+            0 => app.bootstrap = Bootstrap::SampleProgram(HelloWorld),
+            1 => app.bootstrap = Bootstrap::SampleProgram(SpiFlash),
+            2 => return ControlFlow::Break(()),
             _ => unreachable!(),
         };
         ControlFlow::Continue(())
@@ -38,8 +41,8 @@ where
         header: vec!["id", "home.item", "home.brief", ""],
         items,
         item_translate_idx: vec![1, 2],
-        widths: vec![Min(18), Length(20), Length(30), Min(2)],
-        control_flow_fn: bootstrap_handle,
+        widths: vec![Min(18), Length(30), Length(20)],
+        control_flow_fn: sample_program_handle,
     }
     .draw(f, app)
 }
