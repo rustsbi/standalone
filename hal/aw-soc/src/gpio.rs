@@ -136,6 +136,11 @@ impl<A: BaseAddress, const P: char, const N: u8, M: PinMode> Pin<A, P, N, M> {
     pub fn into_eint(self) -> Pin<A, P, N, EintMode> {
         unsafe { &*self.gpio() }.set_mode(self)
     }
+    /// Configures the pin to operate as an alternate function
+    #[inline]
+    pub fn into_function<const F: u8>(self) -> Pin<A, P, N, Function<F>> {
+        unsafe { &*self.gpio() }.set_mode(self)
+    }
 
     #[inline(always)]
     fn gpio(&self) -> *const GPIO<A> {

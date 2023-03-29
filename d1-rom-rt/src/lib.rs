@@ -10,40 +10,38 @@ fn main(params: Parameters) -> Handover {
 */
 #![feature(naked_functions, asm_const)]
 #![no_std]
-use core::arch::asm;
-#[cfg(not(feature = "log"))]
-use d1_hal::gpio::{
-    portb::{PB8, PB9},
-    Function,
+use base_address::Static;
+pub use d1_rom_rt_macros::entry;
+
+use aw_soc::{
+    ccu::Clocks,
+    gpio::{Disabled, Pin},
+    time::U32Ext,
+    uart::{self, Parity, Serial, StopBits, WordLength},
+    UART,
 };
+use core::arch::asm;
 
 pub struct Parameters {
-    #[cfg(not(feature = "log"))]
-    pub uart: d1_hal::uart::Serial<d1_pac::UART0, (PB8<Function<6>>, PB9<Function<6>>)>,
     pub memory_meta: &'static mut Meta,
+    #[cfg(not(feature = "log"))]
+    pub pb8: Pin<Static<0x02000000>, 'B', 8, Disabled>,
+    #[cfg(not(feature = "log"))]
+    pub pb9: Pin<Static<0x02000000>, 'B', 9, Disabled>,
+    #[cfg(not(feature = "log"))]
+    pub uart0: UART<Static<0x02500000>>,
+    pub clocks: Clocks,
 }
 
-pub struct Handover {
-    #[cfg(not(feature = "log"))]
-    pub uart: d1_hal::uart::Serial<d1_pac::UART0, (PB8<Function<6>>, PB9<Function<6>>)>,
-}
+pub struct Handover {}
 
 impl From<Parameters> for Handover {
     #[inline]
     fn from(src: Parameters) -> Self {
-        match () {
-            #[cfg(not(feature = "log"))]
-            () => Handover { uart: src.uart },
-            #[cfg(feature = "log")]
-            () => {
-                let _ = src;
-                Handover {}
-            }
-        }
+        let _ = src;
+        Handover {}
     }
 }
-
-pub use d1_rom_rt_macros::entry;
 
 pub struct Meta {
     pub from_flash: bool,
@@ -89,43 +87,30 @@ unsafe extern "C" fn start() -> ! {
     #[link_section = ".bss.uninit"]
     static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
     asm!(
+        // Enable T-Head ISA extension
+        "li t1, 1 << 22",
+        "csrs 0x7C0, t1",
+        // Invalidate instruction and data cache, branch history table
+        // and branch target buffer table
+        "li t1, 0x30013",
+        "csrs 0x7C2, t1",
         // 关中断
-        "   csrw mie, zero",
-        // 交换头 128 字节
-        "   call {swap}",
-        // 拷贝参数
-        "   la   t0, head_jump
-            la   t1, {param}
-            li   t2, {param_len}
-            addi t0, t0, 0x18
-            add  t2, t2, t1
-        1:
-            bgeu t1, t2, 1f
-            lw   t3, 0(t1)
-            sw   t3, 0(t0)
-            addi t1, t1, 4
-            addi t0, t0, 4
-            j    1b
-        1:
-        ",
-        // 魔法
-        "   fence.i
-            la   sp, {stack}
-            li   t0, {stack_size}
-            add  sp, sp, t0
-            call head_jump
-        ",
-        // 换回头 128 字节
-        "   call {swap}",
+        "csrw mie, zero",
+        "la  sp, {stack}
+        li   t0, {stack_size}
+        add  sp, sp, t0",
+        // 清空bss
+        "la  t1, sbss
+        la   t2, ebss
+    1:  bgeu t1, t2, 1f
+        sd   zero, 0(t1)
+        addi t1, t1, 8
+        j    1b
+    1:  ",
         // 启动！
-        "   call {main}
-            fence.i
-            jr   a0
-        ",
-        swap       =   sym head_swap,
-        param      =   sym magic::PARAM,
-        param_len  = const magic::DDR3Param::LEN,
-
+        "call {main}
+    1:  wfi
+        j 1b",
         stack      =   sym STACK,
         stack_size = const STACK_SIZE,
         main       =   sym wrap_main,
@@ -140,17 +125,38 @@ extern "Rust" {
 }
 
 fn wrap_main() {
-    // note(unsafe): already initialized by ROM code
-    let uart = unsafe { core::mem::transmute(()) };
+    let clocks = Clocks {
+        psi: 600_000_000.hz(),
+        apb1: 24_000_000.hz(),
+    };
+    let pb8: Pin<Static<0x02000000>, 'B', 8, Disabled> = unsafe { core::mem::transmute(()) };
+    let pb9: Pin<Static<0x02000000>, 'B', 9, Disabled> = unsafe { core::mem::transmute(()) };
+    let uart0: UART<Static<0x02500000>> = unsafe { UART::steal_static() };
+    #[cfg(feature = "log")]
+    let pins = (pb8.into_function::<6>(), pb9.into_function::<6>());
+    #[cfg(feature = "log")]
+    let config = uart::Config {
+        baudrate: 115200.bps(),
+        wordlength: WordLength::Eight,
+        parity: Parity::None,
+        stopbits: StopBits::One,
+    };
+    #[cfg(feature = "log")]
+    let serial = Serial::new_static(uart0, pins, config, &clocks);
     let memory_meta = unsafe { &mut MEMORY_META };
 
     let params = Parameters {
-        #[cfg(not(feature = "log"))]
-        uart,
         memory_meta,
+        #[cfg(not(feature = "log"))]
+        pb8,
+        #[cfg(not(feature = "log"))]
+        pb9,
+        #[cfg(not(feature = "log"))]
+        uart0,
+        clocks,
     };
     #[cfg(feature = "log")]
-    log::set_logger(uart);
+    log::set_logger(serial);
 
     let _ = unsafe { main(params) };
 
@@ -160,21 +166,23 @@ fn wrap_main() {
 #[cfg(feature = "log")]
 #[doc(hidden)]
 pub mod log {
-    use d1_hal::{
-        gpio::{
-            portb::{PB8, PB9},
-            Function,
-        },
-        uart::Serial,
-    };
-    use d1_pac::UART0;
-    use embedded_hal_nb::serial::Write;
-    use nb::block;
+    use aw_soc::gpio::{Function, Pin};
+    use base_address::Static;
+    use embedded_hal::serial::Write;
     use spin::{Mutex, Once};
 
     pub static LOGGER: Once<LockedLogger> = Once::new();
 
-    pub struct S(Serial<UART0, (PB8<Function<6>>, PB9<Function<6>>)>);
+    pub type SERIAL = aw_soc::uart::Serial<
+        Static<0x02500000>,
+        Static<0x02001000>,
+        (
+            Pin<Static<0x02000000>, 'B', 8, Function<6>>,
+            Pin<Static<0x02000000>, 'B', 9, Function<6>>,
+        ),
+    >;
+
+    pub struct S(SERIAL);
 
     pub struct LockedLogger {
         #[allow(unused)]
@@ -185,16 +193,14 @@ pub mod log {
         type Error = embedded_hal::serial::ErrorKind;
         #[inline]
         fn write_str(&mut self, s: &str) -> Result<(), Self::Error> {
-            for byte in s.as_bytes() {
-                block!(self.0.write(*byte))?
-            }
-            block!(self.0.flush())?;
+            self.0.write(s.as_bytes())?;
+            self.0.flush()?;
             Ok(())
         }
     }
 
     #[inline]
-    pub fn set_logger(serial: Serial<UART0, (PB8<Function<6>>, PB9<Function<6>>)>) {
+    pub fn set_logger(serial: SERIAL) {
         LOGGER.call_once(|| LockedLogger {
             inner: Mutex::new(S(serial)),
         });
@@ -250,6 +256,37 @@ core::arch::global_asm! {
     "head_jump:",
     "j  {}",
     sym start,
+}
+
+pub unsafe fn init_dram() {
+    asm!(
+        // 交换头 128 字节
+        "call {swap}",
+        // 拷贝参数
+        "
+        la   t0, head_jump
+        la   t1, {param}
+        li   t2, {param_len}
+        addi t0, t0, 0x18
+        add  t2, t2, t1
+    1:
+        bgeu t1, t2, 1f
+        lw   t3, 0(t1)
+        sw   t3, 0(t0)
+        addi t1, t1, 4
+        addi t0, t0, 4
+        j    1b
+    1:",
+        "fence.i",
+        // 魔法
+        "call head_jump",
+        // 换回头 128 字节
+        "call {swap}",
+        "fence.i",
+        swap       =   sym head_swap,
+        param      =   sym magic::PARAM,
+        param_len  = const magic::DDR3Param::LEN,
+    )
 }
 
 #[naked]

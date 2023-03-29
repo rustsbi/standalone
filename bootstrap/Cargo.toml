@@ -7,9 +7,10 @@ edition = "2021"
 
 [dependencies]
 d1-rom-rt = { path = "../d1-rom-rt", features = ["log"]}
+flashes = { path = "../hal/flashes", optional = true }
 
 [features]
 default = ["jump-to-dram"]
-jump-to-dram = []
+jump-to-dram = ["dep:flashes"]
 sample-hello-world = []
-sample-spi-flash = []
+sample-spi-flash = ["dep:flashes"]
