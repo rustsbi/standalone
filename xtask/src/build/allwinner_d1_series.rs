@@ -7,11 +7,7 @@ use std::{
     path::Path,
 };
 
-use crate::{
-    app::{Bootstrap, SampleProgram},
-    tool::Xfel,
-    Config,
-};
+use crate::{app::Bootstrap, tool::Xfel, Config};
 use log::error;
 use os_xtask_utils::{BinUtil, Cargo, CommandExt};
 
@@ -51,8 +47,9 @@ pub fn flash_allwinner_d1_series() {
 
 fn bootstrap_features_from_config(config: &Config) -> Vec<&'static str> {
     match config.bootstrap {
-        Bootstrap::SampleProgram(SampleProgram::HelloWorld) => vec!["sample-hello-world"],
-        Bootstrap::SampleProgram(SampleProgram::SpiFlash) => vec!["sample-spi-flash"],
+        Bootstrap::JumpToDram => vec!["jump-to-dram"],
+        Bootstrap::HelloWorld => vec!["sample-hello-world"],
+        Bootstrap::SpiFlash => vec!["sample-spi-flash"],
     }
 }
 

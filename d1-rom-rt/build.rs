@@ -21,9 +21,6 @@ SECTIONS {
         KEEP(*(.head.egon))
         . = ALIGN(4);
         KEEP(*(.head.meta))
-        . = ALIGN(128);
-        KEEP(*(.magic.tail))
-        KEEP(*(.magic.head))
     } > SRAM
     .text : ALIGN(4) {
         KEEP(*(.text.entry))

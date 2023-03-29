@@ -1,4 +1,4 @@
-use crate::{ui::Builder, App, RouteId};
+use crate::{app::Bootstrap, ui::Builder, App, RouteId};
 use std::ops::ControlFlow;
 use tui::{backend::Backend, layout::Constraint::*, Frame};
 
@@ -8,15 +8,15 @@ where
 {
     #[rustfmt::skip]
     let items = vec![
-        // vec!["JumpToDram".to_string(), "bootstrap.jump-to-dram".to_string(), /* */, ">".to_string()],
+        vec!["JumpToDram".to_string(), "bootstrap.jump-to-dram".to_string(), app.jump_to_dram_brief(), "".to_string()],
         vec!["SampleProgram".to_string(), "bootstrap.sample-program".to_string(), app.sample_program_brief(), ">".to_string()],
         vec!["Back".to_string(), "back".to_string(), "".to_string(), "".to_string()],
     ];
     fn bootstrap_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {
-            // 0 => app.push_route(RouteId::StandardSbiFeat),
-            0 => app.push_route(RouteId::SampleProgram),
-            1 => return ControlFlow::Break(()),
+            0 => app.bootstrap = Bootstrap::JumpToDram,
+            1 => app.push_route(RouteId::SampleProgram),
+            2 => return ControlFlow::Break(()),
             _ => unreachable!(),
         };
         ControlFlow::Continue(())

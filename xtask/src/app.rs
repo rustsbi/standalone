@@ -1,3 +1,4 @@
+use crate::locale;
 use core::mem;
 use serde::{Deserialize, Serialize};
 use std::ops::ControlFlow;
@@ -86,20 +87,36 @@ impl App {
 
 impl App {
     pub fn language_brief(&self) -> String {
-        crate::locale::get_string("language.display.current", &self.locale).to_string()
+        locale::get_string("language.display.current", &self.locale).to_string()
     }
     pub fn bootstrap_brief(&self) -> String {
         // when we have other programs, change this function
-        self.sample_program_brief()
+        match self.bootstrap {
+            Bootstrap::JumpToDram => {
+                locale::get_string("bootstrap.jump-to-dram", &self.locale).to_string()
+            }
+            _ => self.sample_program_brief(),
+        }
+    }
+    pub fn jump_to_dram_brief(&self) -> String {
+        let idx = if self.platform.is_bootstrap_supported(&self.bootstrap) {
+            if self.bootstrap == Bootstrap::JumpToDram {
+                "sample-program.chosen"
+            } else {
+                "sample-program.not-chosen"
+            }
+        } else {
+            "sample-program.platform-not-supported"
+        };
+        locale::get_string(idx, &self.locale).to_string()
     }
     pub fn sample_program_brief(&self) -> String {
         let idx = match self.bootstrap {
-            Bootstrap::SampleProgram(SampleProgram::HelloWorld) => "sample-program.hello-world",
-            Bootstrap::SampleProgram(SampleProgram::SpiFlash) => "sample-program.spi-flash",
-            #[allow(unreachable_patterns)] // remove when jump-to-dram is supported
+            Bootstrap::HelloWorld => "sample-program.hello-world",
+            Bootstrap::SpiFlash => "sample-program.spi-flash",
             _ => "sample-program.not-sample-program",
         };
-        crate::locale::get_string(idx, &self.locale).to_string()
+        locale::get_string(idx, &self.locale).to_string()
     }
     pub fn standard_sbi_brief(&self) -> String {
         let idx = if self.standard_sbi_enabled.sbi_v1p0_ready() {
@@ -109,12 +126,12 @@ impl App {
         } else {
             "standard-sbi-features.partial"
         };
-        crate::locale::get_string(idx, &self.locale).to_string()
+        locale::get_string(idx, &self.locale).to_string()
     }
     pub fn machine_mode_brief(&self) -> String {
         if !self.bootstrap.is_machine_mode_supported() {
             let idx = "machine-mode.not-supported";
-            crate::locale::get_string(idx, &self.locale).to_string()
+            locale::get_string(idx, &self.locale).to_string()
         } else {
             // in future when we have custom sbi features here, change this function
             self.standard_sbi_brief()
@@ -125,7 +142,7 @@ impl App {
             None => "platform-support.no-platform-chosen",
             Some(Platform::AllwinnerD1Series) => "platform-support.allwinner-d1-series",
         };
-        crate::locale::get_string(idx, &self.locale).to_string()
+        locale::get_string(idx, &self.locale).to_string()
     }
 }
 
@@ -151,7 +168,7 @@ impl Default for App {
             item_length: 0,
             control_flow_fn: None,
             locale: "zh-CN".to_string(),
-            bootstrap: Bootstrap::SampleProgram(SampleProgram::HelloWorld),
+            bootstrap: Bootstrap::JumpToDram,
             platform: None,
             standard_sbi_enabled: StandardSbiEnabled::default(),
             supervisor_mode_brief: String::new(),
@@ -194,22 +211,21 @@ impl Route {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Bootstrap {
-    SampleProgram(SampleProgram),
-}
+    JumpToDram,
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum SampleProgram {
+    // Sample programs
     HelloWorld,
     SpiFlash,
 }
 
 impl Bootstrap {
     fn is_machine_mode_supported(&self) -> bool {
-        // when Jump-to-dram implemented, set to true if not matches SampleProgram
-        false
+        match self {
+            Bootstrap::JumpToDram => true,
+            _ => false,
+        }
     }
 }
 
@@ -258,8 +274,9 @@ pub enum Platform {
 impl IsSupported for Platform {
     fn is_bootstrap_supported(&self, bootstrap: &Bootstrap) -> bool {
         match (self, bootstrap) {
-            (Self::AllwinnerD1Series, Bootstrap::SampleProgram(SampleProgram::HelloWorld)) => true,
-            (Self::AllwinnerD1Series, Bootstrap::SampleProgram(SampleProgram::SpiFlash)) => true,
+            (Self::AllwinnerD1Series, Bootstrap::JumpToDram) => true,
+            (Self::AllwinnerD1Series, Bootstrap::HelloWorld) => true,
+            (Self::AllwinnerD1Series, Bootstrap::SpiFlash) => true,
         }
     }
 }

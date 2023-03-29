@@ -1,8 +1,4 @@
-use crate::{
-    app::{Bootstrap, SampleProgram::*},
-    ui::Builder,
-    App,
-};
+use crate::{app::Bootstrap, ui::Builder, App};
 use std::ops::ControlFlow;
 use tui::{backend::Backend, layout::Constraint::*, Frame};
 
@@ -16,11 +12,8 @@ where
             false => "sample-program.not-chosen",
         }
     }
-    let hello_world = choose_str(matches!(
-        app.bootstrap,
-        Bootstrap::SampleProgram(HelloWorld)
-    ));
-    let spi_flash = choose_str(matches!(app.bootstrap, Bootstrap::SampleProgram(SpiFlash)));
+    let hello_world = choose_str(matches!(app.bootstrap, Bootstrap::HelloWorld));
+    let spi_flash = choose_str(matches!(app.bootstrap, Bootstrap::SpiFlash));
     #[rustfmt::skip]
     let items = vec![
         vec!["HelloWorld".to_string(), "sample-program.hello-world".to_string(), hello_world.to_string()],
@@ -29,8 +22,8 @@ where
     ];
     fn sample_program_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {
-            0 => app.bootstrap = Bootstrap::SampleProgram(HelloWorld),
-            1 => app.bootstrap = Bootstrap::SampleProgram(SpiFlash),
+            0 => app.bootstrap = Bootstrap::HelloWorld,
+            1 => app.bootstrap = Bootstrap::SpiFlash,
             2 => return ControlFlow::Break(()),
             _ => unreachable!(),
         };

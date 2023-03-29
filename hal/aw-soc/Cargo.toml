@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 volatile-register = "0.2.1"
-base-address = { path = "../base-address" }
+base-address = "0.0.0"
 embedded-hal = "1.0.0-alpha.9"
 embedded-hal-nb = "1.0.0-alpha.1"
 nb = "1"
