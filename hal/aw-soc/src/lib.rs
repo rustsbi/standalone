@@ -1,5 +1,13 @@
+//! SoC peripheral support for Allwinner chips.
+//!
+//! This package is built under the concept of componentized drivers. It is designed to
+//! use in kernels, firmwares and embedded development with both dynamic and static base
+//! address support.
+//!
+//! Most of `aw-soc` structures have `embedded-hal` traits implemented. Users may combine
+//! this package with `embedded-hal` ecosystem drivers to provide abundant amount of features.
 #![no_std]
-
+#[deny(missing_docs)]
 pub mod ccu;
 pub mod com;
 pub mod gpio;
@@ -10,7 +18,7 @@ pub mod uart;
 use base_address::BaseAddress;
 use core::ops;
 
-/// Clock control unit
+/// Clock control unit.
 pub struct CCU<A: BaseAddress> {
     base: A,
 }
@@ -26,7 +34,7 @@ impl<A: BaseAddress> ops::Deref for CCU<A> {
     }
 }
 
-/// Common control peripheral of DDR SDRAM
+/// Common control peripheral of DDR SDRAM.
 pub struct COM<A: BaseAddress> {
     base: A,
 }
@@ -42,7 +50,7 @@ impl<A: BaseAddress> ops::Deref for COM<A> {
     }
 }
 
-/// Generic Purpose Input/Output peripheral
+/// Generic Purpose Input/Output peripheral.
 pub struct GPIO<A: BaseAddress> {
     base: A,
 }
@@ -58,7 +66,7 @@ impl<A: BaseAddress> ops::Deref for GPIO<A> {
     }
 }
 
-/// Physical layer peripheral of DDR SDRAM
+/// Physical layer peripheral of DDR SDRAM.
 pub struct PHY<A: BaseAddress> {
     base: A,
 }
@@ -74,7 +82,7 @@ impl<A: BaseAddress> ops::Deref for PHY<A> {
     }
 }
 
-/// Serial Peripheral Interface bus
+/// Serial Peripheral Interface bus.
 pub struct SPI<A: BaseAddress> {
     base: A,
 }
@@ -90,7 +98,7 @@ impl<A: BaseAddress> ops::Deref for SPI<A> {
     }
 }
 
-/// Universal Asynchronous Receiver-Transmitter
+/// Universal Asynchronous Receiver-Transmitter.
 pub struct UART<A: BaseAddress> {
     base: A,
 }
@@ -106,20 +114,21 @@ impl<A: BaseAddress> ops::Deref for UART<A> {
     }
 }
 
+/// Time constants and traits.
 pub mod time {
-    /// Bits per second
+    /// Bits per second.
     #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
     pub struct Bps(pub u32);
 
-    /// Hertz
+    /// Hertz.
     #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
     pub struct Hz(pub u32);
 
-    /// Extension trait that adds convenience methods to the `u32` type
+    /// Extension trait that adds convenience methods to the `u32` type.
     pub trait U32Ext {
-        /// Wrap in `Bps`
+        /// Wrap in `Bps`.
         fn bps(self) -> Bps;
-        /// Wrap in `Hz`
+        /// Wrap in `Hz`.
         fn hz(self) -> Hz;
     }
 

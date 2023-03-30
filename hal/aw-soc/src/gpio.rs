@@ -1,11 +1,11 @@
-//! Allwinner GPIO controller
+//! Allwinner GPIO controller.
 use base_address::{BaseAddress, Dynamic, Static};
 use core::marker::PhantomData;
 use volatile_register::RW;
 
 use super::GPIO;
 
-/// Generic Purpose Input/Output peripheral
+/// Generic Purpose Input/Output registers.
 #[repr(C)]
 pub struct RegisterBlock {
     _reserved0: [u32; 12],
@@ -16,7 +16,7 @@ pub struct RegisterBlock {
     pub pio_pow: PioPow,
 }
 
-/// Gpio port register group
+/// Gpio port register group.
 #[repr(C)]
 pub struct Port {
     pub cfg: [RW<u32>; 4],
@@ -26,7 +26,7 @@ pub struct Port {
     _reserved0: [u32; 1],
 }
 
-/// External interrupt register group
+/// External interrupt register group.
 #[repr(C)]
 pub struct Eint {
     pub cfg: [RW<u32>; 4],
@@ -36,7 +36,7 @@ pub struct Eint {
     _reserved0: [u32; 1],
 }
 
-/// Input/Output Power register group
+/// Input/Output Power register group.
 #[repr(C)]
 pub struct PioPow {
     pub mod_sel: RW<u32>,
@@ -73,7 +73,7 @@ impl GPIO<Dynamic> {
 }
 
 impl<A: BaseAddress> GPIO<A> {
-    /// Set GPIO pin mode
+    /// Set GPIO pin mode.
     #[inline]
     pub fn set_mode<const P: char, const N: u8, OldM, NewM>(
         &self,
@@ -109,34 +109,34 @@ const fn port_cfg_index(p: char, n: u8) -> (usize, usize, u8) {
     (port_idx, cfg_reg_idx, cfg_field_idx)
 }
 
-/// Individual GPIO pin
+/// Individual GPIO pin.
 pub struct Pin<A: BaseAddress, const P: char, const N: u8, M> {
     base: A,
     _mode: PhantomData<M>,
 }
 
 impl<A: BaseAddress, const P: char, const N: u8, M: PinMode> Pin<A, P, N, M> {
-    /// Disables the pin
+    /// Disables the pin.
     #[inline]
     pub fn into_disabled(self) -> Pin<A, P, N, Disabled> {
         unsafe { &*self.gpio() }.set_mode(self)
     }
-    /// Configures the pin to operate as an input pin
+    /// Configures the pin to operate as an input pin.
     #[inline]
     pub fn into_input(self) -> Pin<A, P, N, Input> {
         unsafe { &*self.gpio() }.set_mode(self)
     }
-    /// Configures the pin to operate as an output pin
+    /// Configures the pin to operate as an output pin.
     #[inline]
     pub fn into_output(self) -> Pin<A, P, N, Output> {
         unsafe { &*self.gpio() }.set_mode(self)
     }
-    /// Configures the pin to operate as an external interrupt
+    /// Configures the pin to operate as an external interrupt.
     #[inline]
     pub fn into_eint(self) -> Pin<A, P, N, EintMode> {
         unsafe { &*self.gpio() }.set_mode(self)
     }
-    /// Configures the pin to operate as an alternate function
+    /// Configures the pin to operate as an alternate function.
     #[inline]
     pub fn into_function<const F: u8>(self) -> Pin<A, P, N, Function<F>> {
         unsafe { &*self.gpio() }.set_mode(self)
@@ -148,7 +148,7 @@ impl<A: BaseAddress, const P: char, const N: u8, M: PinMode> Pin<A, P, N, M> {
     }
 }
 
-/// External interrupt event
+/// External interrupt event.
 pub enum Event {
     PositiveEdge,
     NegativeEdge,
@@ -157,7 +157,7 @@ pub enum Event {
     BothEdges,
 }
 
-/// Pin that can receive external interrupt
+/// Pin that can receive external interrupt.
 pub trait EintPin {
     fn listen(&mut self, event: Event);
 
@@ -278,20 +278,22 @@ const fn port_index(p: char) -> usize {
     p as usize - b'B' as usize
 }
 
-/// Input mode (type state)
+/// Input mode (type state).
 pub struct Input;
-/// Output mode (type state)
+/// Output mode (type state).
 pub struct Output;
-/// Function modes (type state)
+/// Function modes (type state).
 ///
 /// N should be in 2..=8.
 pub struct Function<const N: u8>;
-/// External interrupt mode (type state)
+/// External interrupt mode (type state).
 pub struct EintMode;
-/// Disabled mode (type state)
+/// Disabled mode (type state).
 pub struct Disabled;
 
+/// Valid GPIO pin mode.
 pub trait PinMode {
+    /// GPIO mode value as is represented in `cfg_reg` register.
     const VALUE: u8;
 }
 

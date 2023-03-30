@@ -1,9 +1,11 @@
+//! Physical layer peripheral of DDR SDRAM.
+
 use base_address::{BaseAddress, Dynamic, Static};
 use volatile_register::{RO, RW};
 
 use super::PHY;
 
-/// Physical layer peripheral
+/// Physical layer peripheral.
 // Ref: https://github.com/Moxa-Linux/BIOS-UC-8200_source_code/blob/master/arch/arm/include/asm/arch-sunxi/dram_sun8i_h3.h
 #[repr(C)]
 pub struct RegisterBlock {
@@ -71,7 +73,7 @@ pub struct RegisterBlock {
     pub upd2: RW<u32>, // 0x888
 }
 
-/// DATX8 register group
+/// DATX8 register group.
 #[repr(C)]
 pub struct Datx8 {
     pub mdlr: RW<u32>,       // 0x00
@@ -87,11 +89,11 @@ pub struct Datx8 {
     _reserved0: [u32; 11],
 }
 
-/// Data pin width
+/// Data pin width.
 pub enum DqWidth {
-    /// Half DQ width
+    /// Half DQ width.
     X8,
-    /// Full DQ width
+    /// Full DQ width.
     X16,
 }
 
@@ -122,6 +124,7 @@ impl PHY<Dynamic> {
 }
 
 impl<A: BaseAddress> PHY<A> {
+    /// ?
     #[inline]
     pub fn dqs_gate_detect(&self) {
         let pgsr0 = self.pgsr[0].read();

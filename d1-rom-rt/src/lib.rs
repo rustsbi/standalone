@@ -21,7 +21,7 @@ use aw_soc::{
     gpio::{Disabled, Pin},
     time::U32Ext,
     uart::{self, Parity, Serial, StopBits, WordLength},
-    COM, UART,
+    CCU, COM, UART,
 };
 use core::arch::asm;
 
@@ -34,6 +34,7 @@ pub struct Parameters {
     #[cfg(not(feature = "log"))]
     pub uart0: UART<Static<0x02500000>>,
     pub com: COM<Static<0x03102000>>,
+    pub ccu: CCU<Static<0x02001000>>,
     pub clocks: Clocks,
 }
 
@@ -135,9 +136,8 @@ fn wrap_main() {
     };
     let pb8: Pin<Static<0x02000000>, 'B', 8, Disabled> = unsafe { core::mem::transmute(()) };
     let pb9: Pin<Static<0x02000000>, 'B', 9, Disabled> = unsafe { core::mem::transmute(()) };
+    let ccu: CCU<Static<0x02001000>> = unsafe { CCU::steal_static() };
     let uart0: UART<Static<0x02500000>> = unsafe { UART::steal_static() };
-    #[cfg(feature = "log")]
-    let pins = (pb8.into_function::<6>(), pb9.into_function::<6>());
     #[cfg(feature = "log")]
     let config = uart::Config {
         baudrate: 115200.bps(),
@@ -146,7 +146,13 @@ fn wrap_main() {
         stopbits: StopBits::One,
     };
     #[cfg(feature = "log")]
-    let serial = Serial::new_static(uart0, pins, config, &clocks);
+    let serial = Serial::new(
+        uart0,
+        (pb8.into_function::<6>(), pb9.into_function::<6>()),
+        config,
+        &clocks,
+        &ccu,
+    );
     let memory_meta = unsafe { &mut MEMORY_META };
     let com: COM<Static<0x03102000>> = unsafe { COM::steal_static() };
 
@@ -159,6 +165,7 @@ fn wrap_main() {
         #[cfg(not(feature = "log"))]
         uart0,
         com,
+        ccu,
         clocks,
     };
     #[cfg(feature = "log")]
@@ -181,7 +188,7 @@ pub mod log {
 
     pub type SERIAL = aw_soc::uart::Serial<
         Static<0x02500000>,
-        Static<0x02001000>,
+        0,
         (
             Pin<Static<0x02000000>, 'B', 8, Function<6>>,
             Pin<Static<0x02000000>, 'B', 9, Function<6>>,
