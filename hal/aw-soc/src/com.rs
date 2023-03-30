@@ -1,9 +1,11 @@
+//! Common control peripheral of DDR SDRAM.
+
 use base_address::{BaseAddress, Dynamic, Static};
 use volatile_register::RW;
 
 use super::COM;
 
-/// Common control peripheral
+/// Common control peripheral registers.
 #[repr(C)]
 pub struct RegisterBlock {
     pub work_mode_0: RW<u32>, // 0x00
@@ -23,19 +25,19 @@ pub struct RegisterBlock {
     pub remap3: RW<u32>, // 0x50c
 }
 
-/// Dram type
+/// Dram type.
 pub enum Type {
-    /// DDR2
+    /// DDR2.
     Ddr2,
-    /// DDR3
+    /// DDR3.
     Ddr3,
-    /// LPDDR2
+    /// LPDDR2.
     LpDdr2,
-    /// LPDDR3
+    /// LPDDR3.
     LpDdr3,
 }
 
-/// Dram configuration
+/// Dram configuration.
 pub struct Config {
     dram_type: Type,
     unknown_tpr13_bit5: bool,
@@ -69,7 +71,7 @@ impl COM<Dynamic> {
 }
 
 impl<A: BaseAddress> COM<A> {
-    /// Configure dram settings
+    /// Configure dram settings.
     #[inline]
     pub fn configure(&self, config: Config) {
         let mut bits = 0;
@@ -98,7 +100,7 @@ impl<A: BaseAddress> COM<A> {
         unsafe { self.work_mode_0.modify(|v| (v & !mask) | bits) };
     }
 
-    /// Get DRAM size in bytes
+    /// Get DRAM size in bytes.
     #[inline]
     pub fn dram_size(&self) -> usize {
         let bits_0 = self.work_mode_0.read();

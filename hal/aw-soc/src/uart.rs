@@ -1,16 +1,18 @@
-//! Universal Asynchronous Receiver-Transmitter
+//! Universal Asynchronous Receiver-Transmitter.
 
 use core::cell::UnsafeCell;
 
 use super::UART;
 use crate::{
-    ccu::{self, Clocks, Gate},
+    ccu::{self, ClockGate, Clocks},
     gpio::{Function, Pin},
     time::Bps,
+    CCU,
 };
 use base_address::{BaseAddress, Dynamic, Static};
 use uart16550::{CharLen, Register, Uart16550, PARITY};
 
+/// Universal Asynchronous Receiver-Transmitter registers.
 #[repr(C)]
 pub struct RegisterBlock {
     uart16550: Uart16550<u32>,
@@ -18,16 +20,21 @@ pub struct RegisterBlock {
     usr: USR<u32>, // offset = 31(0x7c)
 }
 
+/// Serial configuration structure.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Config {
+    /// Serial baudrate in `Bps`.
     pub baudrate: Bps,
+    /// Word length, can be 5, 6, 7 or 8.
     pub wordlength: WordLength,
+    /// Parity checks, can be `None`, `Odd` or `Even`.
     pub parity: Parity,
+    /// Number of stop bits, can be `One` or `Two`.
     pub stopbits: StopBits,
 }
 
+/// Serial word length settings.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-#[allow(unused)] // should be used as exported structure in HAL crate
 pub enum WordLength {
     Five,
     Six,
@@ -35,15 +42,18 @@ pub enum WordLength {
     Eight,
 }
 
+/// Serial parity bit settings.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-#[allow(unused)] // should be used as exported structure in HAL crate
 pub enum Parity {
+    /// No parity checks.
     None,
+    /// Odd parity.
     Odd,
+    /// Even parity.
     Even,
 }
 
-/// Stop Bit configuration parameter for serial.
+/// Stop bit settings.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum StopBits {
     /// 1 stop bit
@@ -86,22 +96,21 @@ impl core::ops::Deref for RegisterBlock {
     }
 }
 
-pub struct Serial<A: BaseAddress, A1: BaseAddress, PINS: Pins<UART<A>>> {
+/// Managed serial structure with peripheral and pins.
+pub struct Serial<A: BaseAddress, const I: usize, PINS: Pins<I>> {
     uart: UART<A>,
     pins: PINS,
-    clock_gate: Gate<A1, PINS::ClockGate>,
 }
 
-impl<const B: usize, const B1: usize, PINS: Pins<UART<Static<B>>>>
-    Serial<Static<B>, Static<B1>, PINS>
-{
-    /// Create instance of Uart.
+impl<A: BaseAddress, const I: usize, PINS: Pins<I>> Serial<A, I, PINS> {
+    /// Create a serial instance.
     #[inline]
-    pub fn new_static(
-        uart: UART<Static<B>>,
+    pub fn new<A1: BaseAddress>(
+        uart: UART<A>,
         pins: PINS,
         config: impl Into<Config>,
-        clock: &Clocks,
+        clocks: &Clocks,
+        ccu: &CCU<A1>,
     ) -> Self {
         // 1. unwrap parameters
         let Config {
@@ -112,9 +121,8 @@ impl<const B: usize, const B1: usize, PINS: Pins<UART<Static<B>>>>
         } = config.into();
         let bps = baudrate.0;
         // 2. init peripheral clocks
-        let clock_gate: Gate<Static<B1>, PINS::ClockGate> = unsafe { Gate::steal_static() };
         // note(unsafe): async read and write using ccu registers
-        unsafe { clock_gate.reset() };
+        unsafe { PINS::ClockGate::reset(&ccu) };
         // 3. set interrupt configuration
         // on BT0 stage we disable all uart interrupts
         let interrupt_types = uart.ier().read();
@@ -126,7 +134,7 @@ impl<const B: usize, const B1: usize, PINS: Pins<UART<Static<B>>>>
                 .disable_thre(),
         );
         // 4. calculate and set baudrate
-        let uart_clk = (clock.apb1.0 + 8 * bps) / (16 * bps);
+        let uart_clk = (clocks.apb1.0 + 8 * bps) / (16 * bps);
         uart.write_divisor(uart_clk as u16);
         // 5. additional configurations
         let char_len = match wordlength {
@@ -148,42 +156,38 @@ impl<const B: usize, const B1: usize, PINS: Pins<UART<Static<B>>>>
                 .set_parity(parity),
         );
         // 6. return the instance
-        Serial {
-            uart,
-            pins,
-            clock_gate,
-        }
+        Serial { uart, pins }
     }
     /// Close uart and release peripheral.
     #[inline]
-    pub fn free(self) -> (UART<Static<B>>, PINS) {
+    pub fn free<A1: BaseAddress>(self, ccu: &CCU<A1>) -> (UART<A>, PINS) {
         // clock is closed for self.clock_gate is dropped
-        let _ = unsafe { self.clock_gate.free() };
+        unsafe { PINS::ClockGate::free(&ccu) };
         (self.uart, self.pins)
     }
 }
 
-pub trait Pins<UART> {
+/// Valid serial pins.
+pub trait Pins<const I: usize> {
     type ClockGate: ccu::ClockGate;
 }
 
-impl<A, A1, A2> Pins<UART<A>> for (Pin<A1, 'B', 8, Function<6>>, Pin<A2, 'B', 9, Function<6>>)
+impl<A1, A2> Pins<0> for (Pin<A1, 'B', 8, Function<6>>, Pin<A2, 'B', 9, Function<6>>)
 where
-    A: BaseAddress,
     A1: BaseAddress,
     A2: BaseAddress,
 {
     type ClockGate = ccu::UART<0>;
 }
 
-impl<A: BaseAddress, A1: BaseAddress, PINS: Pins<UART<A>>> embedded_hal::serial::ErrorType
-    for Serial<A, A1, PINS>
+impl<A: BaseAddress, const I: usize, PINS: Pins<I>> embedded_hal::serial::ErrorType
+    for Serial<A, I, PINS>
 {
     type Error = embedded_hal::serial::ErrorKind;
 }
 
-impl<A: BaseAddress, A1: BaseAddress, PINS: Pins<UART<A>>> embedded_hal::serial::Write
-    for Serial<A, A1, PINS>
+impl<A: BaseAddress, const I: usize, PINS: Pins<I>> embedded_hal::serial::Write
+    for Serial<A, I, PINS>
 {
     #[inline]
     fn write(&mut self, buffer: &[u8]) -> Result<(), Self::Error> {
@@ -206,8 +210,8 @@ impl<A: BaseAddress, A1: BaseAddress, PINS: Pins<UART<A>>> embedded_hal::serial:
     }
 }
 
-impl<A: BaseAddress, A1: BaseAddress, PINS: Pins<UART<A>>> embedded_hal_nb::serial::Write<u8>
-    for Serial<A, A1, PINS>
+impl<A: BaseAddress, const I: usize, PINS: Pins<I>> embedded_hal_nb::serial::Write<u8>
+    for Serial<A, I, PINS>
 {
     #[inline]
     fn write(&mut self, word: u8) -> nb::Result<(), Self::Error> {
@@ -228,21 +232,21 @@ impl<A: BaseAddress, A1: BaseAddress, PINS: Pins<UART<A>>> embedded_hal_nb::seri
     }
 }
 
-/// 串口控制设置寄存器。
+/// UART Status Register.
 pub struct USR<R: Register>(UnsafeCell<R>);
 
-/// 串口控制设置。
+/// Status settings for current peripheral.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct UartStatus(u8);
 
 impl<R: uart16550::Register> USR<R> {
-    /// 写入线控制设置。
+    /// Write UART status settings.
     #[inline]
     pub fn write(&self, val: UartStatus) {
         unsafe { self.0.get().write_volatile(R::from(val.0)) }
     }
 
-    /// 读取线控制设置。
+    /// Read UART status settings.
     #[inline]
     pub fn read(&self) -> UartStatus {
         UartStatus(unsafe { self.0.get().read_volatile() }.val())
@@ -256,31 +260,31 @@ impl UartStatus {
     const TFNF: u8 = 1 << 1;
     const BUSY: u8 = 1 << 0;
 
-    /// 接收队列是否为满。
+    /// Returns if the receive FIFO is full.
     #[inline]
     pub const fn receive_fifo_full(self) -> bool {
         self.0 & Self::RFF != 0
     }
 
-    /// 接收队列是否非空。
+    /// Returns if the receive FIFO is non-empty.
     #[inline]
     pub const fn receive_fifo_not_empty(self) -> bool {
         self.0 & Self::RFNE != 0
     }
 
-    /// 发送队列是否为空。
+    /// Returns if the transmit FIFO is empty.
     #[inline]
     pub const fn transmit_fifo_empty(self) -> bool {
         self.0 & Self::TFE != 0
     }
 
-    /// 发送队列是否未满。
+    /// Returns if the transmit FIFO is not full.
     #[inline]
     pub const fn transmit_fifo_not_full(self) -> bool {
         self.0 & Self::TFNF != 0
     }
 
-    /// 线路是否忙碌。
+    /// Returns if the peripheral is busy.
     #[inline]
     pub const fn busy(self) -> bool {
         self.0 & Self::BUSY != 0

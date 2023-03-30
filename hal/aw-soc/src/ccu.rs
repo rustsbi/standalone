@@ -1,20 +1,28 @@
+//! Clock control unit.
+
 use super::CCU;
 use crate::time::Hz;
 use base_address::{BaseAddress, Dynamic, Static};
-use core::{cell::UnsafeCell, marker::PhantomData};
+use core::cell::UnsafeCell;
 
+/// Clock configuration on current SoC.
 #[derive(Debug)]
 pub struct Clocks {
+    /// PSI clock frequency.
     pub psi: Hz,
+    /// Advanced Peripheral Bus 1 clock frequency.
     pub apb1: Hz,
 }
 
+/// Clock Control Unit registers.
 #[repr(C)]
 pub struct RegisterBlock {
     _reserved0: [u32; 579],
+    /// 0x90c - UART Bus Gating Reset register.
     pub uart_bgr: UART_BGR,
 }
 
+/// UART Bus Gating Reset register.
 #[repr(C)]
 pub struct UART_BGR(UnsafeCell<u32>);
 
@@ -35,6 +43,7 @@ mod uart_bgr {
         }
     }
 
+    /// Structure representation of UART bus gating register.
     pub struct UartBgr(u32);
 
     impl UartBgr {
@@ -87,52 +96,17 @@ impl CCU<Dynamic> {
     }
 }
 
-pub struct Gate<A, P> {
-    base: A,
-    _peripheral: PhantomData<P>,
-}
-
-impl<const B: usize, P: ClockGate> Gate<Static<B>, P> {
-    #[inline]
-    pub unsafe fn steal_static() -> Gate<Static<B>, P> {
-        Self {
-            base: Static::<B>,
-            _peripheral: PhantomData,
-        }
-    }
-}
-
-impl<const B: usize, P: ClockGate> Gate<Static<B>, P> {
-    #[inline]
-    pub unsafe fn reset(&self) {
-        let ccu: CCU<Static<B>> = CCU::steal_static();
-        P::reset(&ccu);
-    }
-    #[inline]
-    pub unsafe fn free(self) {
-        let ccu: CCU<Static<B>> = CCU::steal_static();
-        unsafe { P::free(&ccu) };
-    }
-}
-
-impl<P: ClockGate> Gate<Dynamic, P> {
-    #[inline]
-    pub unsafe fn reset(&self) {
-        let ccu: CCU<Dynamic> = CCU::steal_dynamic(self.base.ptr());
-        P::reset(&ccu);
-    }
-    #[inline]
-    pub unsafe fn free(self) {
-        let ccu: CCU<Dynamic> = CCU::steal_dynamic(self.base.ptr());
-        unsafe { P::free(&ccu) };
-    }
-}
-
+/// Static peripheral that can be clock gated by CCU.
 pub trait ClockGate {
+    /// Reset this peripheral by provided `ccu`.
     unsafe fn reset<A: BaseAddress>(ccu: &CCU<A>);
+    /// Free this peripheral by provided `ccu`.
     unsafe fn free<A: BaseAddress>(ccu: &CCU<A>);
 }
 
+/// Universal Asynchronous Receiver-Transmitter clock gate.
+///
+/// UART peripheral should be indexed by type parameter `IDX`.
 pub struct UART<const IDX: usize>;
 
 impl<const I: usize> ClockGate for UART<I> {
