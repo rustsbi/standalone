@@ -1,5 +1,6 @@
 // Ref: https://github.com/oreboot/oreboot/blob/51d40caebc814fdfc7c772111344acb04b86d3a9/src/mainboard/sunxi/nezha/bt0/build.rs
 
+#[cfg(feature = "log")]
 use super::println;
 use core::ptr::{read_volatile, write_volatile};
 
@@ -239,10 +240,8 @@ fn get_pmu_exists() -> bool {
     return false;
 }
 
-fn memcpy_self(dst: &mut [u32; 22], src: &mut [u32; 22], len: usize) {
-    for i in 0..len {
-        dst[i] = src[i];
-    }
+fn memcpy_self(dst: &mut [u32; 22], src: &[u32; 22], len: usize) {
+    dst[..len].copy_from_slice(&src[..len]);
 }
 
 static mut PHY_CFG0: [u32; 22] = [
@@ -582,8 +581,8 @@ fn auto_set_timing_para(para: &mut dram_parameters) {
     let dtype = para.dram_type;
     let tpr13 = para.dram_tpr13;
 
-    //println!("type  = {}\n", dtype);
-    //println!("tpr13 = {}\n", tpr13);
+    //#[cfg(feature = "log")] println!("type  = {}\n", dtype);
+    //#[cfg(feature = "log")] println!("tpr13 = {}\n", tpr13);
 
     // FIXME: Half of this is unused, wat?!
     let mut tccd: u32 = 0; // 88(sp)
@@ -1519,6 +1518,7 @@ fn auto_scan_dram_size(para: &mut dram_parameters) -> Result<(), &'static str> {
         let i = scan_for_addr_wrap();
 
         if VERBOSE {
+            #[cfg(feature = "log")]
             println!("rank {} row = {}", rank, i).ok();
         }
 
@@ -1560,7 +1560,10 @@ fn auto_scan_dram_size(para: &mut dram_parameters) -> Result<(), &'static str> {
         }
         let banks = (j + 1) << 2; // 4 or 8
         if VERBOSE {
+            #[cfg(feature = "log")]
             println!("rank {} bank = {}", rank, banks).ok();
+            #[cfg(not(feature = "log"))]
+            let _ = banks;
         }
 
         // Store banks in para 1
@@ -1589,6 +1592,7 @@ fn auto_scan_dram_size(para: &mut dram_parameters) -> Result<(), &'static str> {
         let pgsize = if i == 9 { 0 } else { 1 << (i - 10) };
 
         if VERBOSE {
+            #[cfg(feature = "log")]
             println!("rank {} page size = {}KB", rank, pgsize).ok();
         }
 
@@ -1699,6 +1703,7 @@ pub fn init_dram(para: &mut dram_parameters) -> usize {
     // Test ZQ status
     if para.dram_tpr13 & (1 << 16) > 0 {
         if VERBOSE {
+            #[cfg(feature = "log")]
             println!("DRAM only has internal ZQ.").ok();
         }
         writel(RES_CAL_CTRL_REG, readl(RES_CAL_CTRL_REG) | 0x100);
@@ -1714,13 +1719,17 @@ pub fn init_dram(para: &mut dram_parameters) -> usize {
         sdelay(20);
         if VERBOSE {
             let zq_val = readl(ZQ_VALUE);
+            #[cfg(feature = "log")]
             println!("ZQ: {}", zq_val).ok();
+            #[cfg(not(feature = "log"))]
+            let _ = zq_val;
         }
     }
 
     // Set voltage
     let rc = get_pmu_exists();
     if VERBOSE {
+        #[cfg(feature = "log")]
         println!("PMU exists? {}", rc).ok();
     }
 
@@ -1738,7 +1747,10 @@ pub fn init_dram(para: &mut dram_parameters) -> usize {
     // Set SDRAM controller auto config
     if (para.dram_tpr13 & 0x1) == 0 {
         if let Err(msg) = auto_scan_dram_config(para) {
+            #[cfg(feature = "log")]
             println!("config fail {}", msg).ok();
+            #[cfg(not(feature = "log"))]
+            let _ = msg;
             return 0;
         }
     }
@@ -1748,12 +1760,17 @@ pub fn init_dram(para: &mut dram_parameters) -> usize {
         3 => "DDR3",
         _ => "",
     };
+    #[cfg(feature = "log")]
     println!("{}@{}MHz", dtype, para.dram_clk).ok();
+    #[cfg(not(feature = "log"))]
+    let _ = dtype;
 
     if VERBOSE {
         if (para.dram_odt_en & 0x1) == 0 {
+            #[cfg(feature = "log")]
             println!("ODT off").ok();
         } else {
+            #[cfg(feature = "log")]
             println!("ZQ: {}", para.dram_zq).ok();
         }
     }
@@ -1761,15 +1778,20 @@ pub fn init_dram(para: &mut dram_parameters) -> usize {
     if VERBOSE {
         // report ODT
         if (para.dram_mr1 & 0x44) == 0 {
+            #[cfg(feature = "log")]
             println!("ODT off").ok();
         } else {
+            #[cfg(feature = "log")]
             println!("ODT: {}", para.dram_mr1).ok();
         }
     }
 
     // Init core, final run
     if let Err(msg) = mctl_core_init(para) {
+        #[cfg(feature = "log")]
         println!("init error {}", msg).ok();
+        #[cfg(not(feature = "log"))]
+        let _ = msg;
         return 0;
     };
 
@@ -1783,6 +1805,7 @@ pub fn init_dram(para: &mut dram_parameters) -> usize {
     }
     let mem_size = rc;
     if VERBOSE {
+        #[cfg(feature = "log")]
         println!("DRAM: {}M", mem_size).ok();
     }
 
@@ -1837,9 +1860,13 @@ pub fn init_dram(para: &mut dram_parameters) -> usize {
             return 0;
         }
         if let Err(msg) = dramc_simple_wr_test(mem_size, len) {
+            #[cfg(feature = "log")]
             println!("test fail {}", msg).ok();
+            #[cfg(not(feature = "log"))]
+            let _ = msg;
             return 0;
         }
+        #[cfg(feature = "log")]
         println!("test OK").ok();
     }
 

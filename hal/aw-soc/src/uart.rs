@@ -3,9 +3,10 @@
 use core::cell::UnsafeCell;
 
 use super::UART;
+#[allow(unused)]
+use crate::gpio::{Function, Pin};
 use crate::{
     ccu::{self, ClockGate, Clocks},
-    gpio::{Function, Pin},
     time::Bps,
     CCU,
 };
@@ -172,12 +173,27 @@ pub trait Pins<const I: usize> {
     type ClockGate: ccu::ClockGate;
 }
 
-impl<A1, A2> Pins<0> for (Pin<A1, 'B', 8, Function<6>>, Pin<A2, 'B', 9, Function<6>>)
+/// Valid transmit pin for UART peripheral.
+pub trait Transmit<const I: usize> {}
+
+/// Valid receive pin for UART peripheral.
+pub trait Receive<const I: usize> {}
+
+impl<const I: usize, T, R> Pins<I> for (T, R)
 where
-    A1: BaseAddress,
-    A2: BaseAddress,
+    T: Transmit<I>,
+    R: Receive<I>,
 {
-    type ClockGate = ccu::UART<0>;
+    type ClockGate = ccu::UART<I>;
+}
+
+#[allow(unused)]
+macro_rules! impl_uart_pins {
+    ($(($p: expr, $i: expr, $m: ty): $Trait: ty;)+) => {
+        $(
+impl<A: base_address::BaseAddress> $Trait for $crate::gpio::Pin<A, $p, $i, $m> {}
+        )+
+    };
 }
 
 impl<A: BaseAddress, const I: usize, PINS: Pins<I>> embedded_hal::serial::ErrorType

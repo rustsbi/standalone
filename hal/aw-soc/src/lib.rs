@@ -10,9 +10,11 @@
 #[deny(missing_docs)]
 pub mod ccu;
 pub mod com;
+#[macro_use]
 pub mod gpio;
 pub mod phy;
 pub mod spi;
+#[macro_use]
 pub mod uart;
 
 use base_address::BaseAddress;
@@ -143,3 +145,13 @@ pub mod time {
         }
     }
 }
+
+mod wafer {
+    mod d1;
+    pub mod prelude {
+        #[cfg(feature = "d1")]
+        pub use super::d1::Pins;
+    }
+}
+
+pub use wafer::prelude::*;
