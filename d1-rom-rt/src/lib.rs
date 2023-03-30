@@ -10,27 +10,24 @@ fn main(params: Parameters) -> Handover {
 */
 #![feature(naked_functions, asm_const)]
 #![no_std]
+
+#[cfg(any(feature = "nezha", feature = "lichee"))]
 mod mctl;
+#[cfg(any(feature = "nezha", feature = "lichee"))]
 pub use mctl::init as dram_init;
 
 use base_address::Static;
 pub use d1_rom_rt_macros::entry;
 
-use aw_soc::{
-    ccu::Clocks,
-    gpio::{Disabled, Pin},
-    time::U32Ext,
-    uart::{self, Parity, Serial, StopBits, WordLength},
-    CCU, COM, UART,
-};
+#[cfg(feature = "log")]
+use aw_soc::uart::{self, Parity, Serial, StopBits, WordLength};
+use aw_soc::{ccu::Clocks, time::U32Ext, Pins, CCU, COM, UART};
 use core::arch::asm;
 
 pub struct Parameters {
     pub memory_meta: &'static mut Meta,
     #[cfg(not(feature = "log"))]
-    pub pb8: Pin<Static<0x02000000>, 'B', 8, Disabled>,
-    #[cfg(not(feature = "log"))]
-    pub pb9: Pin<Static<0x02000000>, 'B', 9, Disabled>,
+    pub gpio: Pins<Static<0x02000000>>,
     #[cfg(not(feature = "log"))]
     pub uart0: UART<Static<0x02500000>>,
     pub com: COM<Static<0x03102000>>,
@@ -134,8 +131,7 @@ fn wrap_main() {
         psi: 600_000_000.hz(),
         apb1: 24_000_000.hz(),
     };
-    let pb8: Pin<Static<0x02000000>, 'B', 8, Disabled> = unsafe { core::mem::transmute(()) };
-    let pb9: Pin<Static<0x02000000>, 'B', 9, Disabled> = unsafe { core::mem::transmute(()) };
+    let gpio: Pins<Static<0x02000000>> = unsafe { core::mem::transmute(()) };
     let ccu: CCU<Static<0x02001000>> = unsafe { CCU::steal_static() };
     let uart0: UART<Static<0x02500000>> = unsafe { UART::steal_static() };
     #[cfg(feature = "log")]
@@ -148,7 +144,7 @@ fn wrap_main() {
     #[cfg(feature = "log")]
     let serial = Serial::new(
         uart0,
-        (pb8.into_function::<6>(), pb9.into_function::<6>()),
+        (gpio.pb8.into_function::<6>(), gpio.pb9.into_function::<6>()),
         config,
         &clocks,
         &ccu,
@@ -159,9 +155,7 @@ fn wrap_main() {
     let params = Parameters {
         memory_meta,
         #[cfg(not(feature = "log"))]
-        pb8,
-        #[cfg(not(feature = "log"))]
-        pb9,
+        gpio,
         #[cfg(not(feature = "log"))]
         uart0,
         com,
@@ -220,6 +214,7 @@ pub mod log {
     }
 }
 
+#[cfg(feature = "log")]
 #[doc(hidden)]
 pub extern crate ufmt;
 

@@ -212,6 +212,17 @@ impl<A: BaseAddress, const P: char, const N: u8> EintPin for Pin<A, P, N, EintMo
     }
 }
 
+macro_rules! impl_gpio_pins {
+    ($($px: ident:($P: expr, $N: expr, $M: ty);)+) => {
+/// GPIO pins in current platform.
+pub struct Pins<A: base_address::BaseAddress> {
+    $(
+    pub $px: $crate::gpio::Pin<A, $P, $N, $M>,
+    )+
+}
+    };
+}
+
 impl<A: BaseAddress, const P: char, const N: u8> embedded_hal::digital::ErrorType
     for Pin<A, P, N, Input>
 {

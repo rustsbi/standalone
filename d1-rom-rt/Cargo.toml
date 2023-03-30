@@ -9,11 +9,14 @@ edition = "2021"
 [dependencies]
 d1-rom-rt-macros = { path = "macros" }
 base-address = "0.0.0"
-aw-soc = { path = "../hal/aw-soc" }
 embedded-hal = "1.0.0-alpha.9"
 nb = "1.1.0"
 spin = { version = "0.9.5", optional = true }
 ufmt = { version = "0.2.0", optional = true }
+
+[dependencies.aw-soc]
+path = "../hal/aw-soc"
+features = ["d1"]
 
 [features]
 default = ["nezha"]
