@@ -212,6 +212,7 @@ impl<A: BaseAddress, const P: char, const N: u8> EintPin for Pin<A, P, N, EintMo
     }
 }
 
+#[allow(unused)]
 macro_rules! impl_gpio_pins {
     ($($px: ident:($P: expr, $N: expr, $M: ty);)+) => {
 /// GPIO pins in current platform.
