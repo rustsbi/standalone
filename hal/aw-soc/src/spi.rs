@@ -1,5 +1,7 @@
 //! Serial Peripheral Interface bus
 
+use super::SPI;
+use base_address::{BaseAddress, Dynamic, Static};
 use volatile_register::RW;
 
 #[repr(C)]
@@ -30,6 +32,74 @@ pub struct RegisterBlock {
     pub txd: RW<u32>,
     _reserved7: [u32; 63],
     pub rxd: RW<u32>,
+}
+
+impl<const B: usize> SPI<Static<B>> {
+    /// Create a peripheral instance from statically known address.
+    ///
+    /// This function is unsafe for it forces to seize ownership from possible
+    /// wrapped peripheral group types. Users should normally retrieve ownership
+    /// from wrapped types.
+    #[inline]
+    pub const unsafe fn steal_static() -> SPI<Static<B>> {
+        SPI { base: Static::<B> }
+    }
+}
+
+impl SPI<Dynamic> {
+    /// Create a peripheral instance from dynamically known address.
+    ///
+    /// This function is unsafe for it forces to seize ownership from possible
+    /// wrapped peripheral group types. Users should normally retrieve ownership
+    /// from wrapped types.
+    #[inline]
+    pub unsafe fn steal_dynamic(base: *const ()) -> SPI<Dynamic> {
+        SPI {
+            base: Dynamic::new(base as usize),
+        }
+    }
+}
+
+pub struct Spi<A: BaseAddress, PINS> {
+    spi: SPI<A>,
+    pins: PINS,
+}
+
+impl<A: BaseAddress, PINS> embedded_hal::spi::SpiBusRead for Spi<A, PINS> {
+    fn read(&mut self, words: &mut [u8]) -> Result<(), Self::Error> {
+        for word in words {
+            while self.spi.fsr.read() & 0xff == 0 {
+                core::hint::spin_loop();
+            }
+            *word = self.spi.rxd.read() as u8
+        }
+        Ok(())
+    }
+}
+
+impl<A: BaseAddress, PINS> embedded_hal::spi::SpiBusWrite<u8> for Spi<A, PINS> {
+    fn write(&mut self, words: &[u8]) -> Result<(), Self::Error> {
+        for word in words {
+            while (self.spi.fsr.read() >> 16) & 0xff >= 64 {
+                core::hint::spin_loop();
+            }
+            unsafe { self.spi.txd.write(*word as u32) }
+        }
+        Ok(())
+    }
+}
+
+impl<A: BaseAddress, PINS> embedded_hal::spi::SpiBusFlush for Spi<A, PINS> {
+    fn flush(&mut self) -> Result<(), Self::Error> {
+        while (self.spi.fsr.read() >> 16) & 0xff > 0 {
+            core::hint::spin_loop();
+        }
+        Ok(())
+    }
+}
+
+impl<A: BaseAddress, PINS> embedded_hal::spi::ErrorType for Spi<A, PINS> {
+    type Error = embedded_hal::spi::ErrorKind;
 }
 
 #[cfg(test)]
