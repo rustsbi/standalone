@@ -249,10 +249,12 @@ impl<A: BaseAddress, const I: usize, PINS: Pins<I>> embedded_hal_nb::serial::Wri
 }
 
 /// UART Status Register.
+#[repr(transparent)]
 pub struct USR<R: Register>(UnsafeCell<R>);
 
 /// Status settings for current peripheral.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[repr(transparent)]
 pub struct UartStatus(u8);
 
 impl<R: uart16550::Register> USR<R> {

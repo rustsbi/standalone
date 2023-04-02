@@ -11,7 +11,7 @@ base-address = "0.0.0"
 embedded-hal = "1.0.0-alpha.9"
 embedded-hal-nb = "1.0.0-alpha.1"
 nb = "1"
-uart16550 = "0.0.0"
+uart16550 = "0.0.1"
 
 [dev-dependencies]
 memoffset = "0.8"

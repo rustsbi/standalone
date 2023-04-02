@@ -147,6 +147,7 @@ pub mod time {
 }
 
 mod wafer {
+    #[cfg(feature = "d1")]
     mod d1;
     pub mod prelude {
         #[cfg(feature = "d1")]
