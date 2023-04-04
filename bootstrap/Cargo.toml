@@ -6,11 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-d1-rom-rt = { path = "../d1-rom-rt", features = ["log"]}
+d1-rom-rt = { path = "../d1-rom-rt" }
 flashes = { path = "../hal/flashes", optional = true }
+aw-soc = { path = "../hal/aw-soc", optional = true }
+embedded-hal = { version = "1.0.0-alpha.9", optional = true }
 
 [features]
-default = ["jump-to-dram"]
-jump-to-dram = ["dep:flashes"]
-sample-hello-world = []
-sample-spi-flash = ["dep:flashes"]
+default = ["sample-spi-flash"]
+jump-to-dram = ["dep:flashes", "d1-rom-rt/log"]
+sample-hello-world = ["d1-rom-rt/log"]
+sample-spi-flash = ["dep:aw-soc", "dep:flashes", "dep:embedded-hal"]
