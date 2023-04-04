@@ -486,9 +486,10 @@ pub trait Pins<const I: usize> {
 /// Valid clk pin for SPI peripheral.
 pub trait Clk<const I: usize> {}
 
-/// Valid receive pin for SPI peripheral.
+/// Valid mosi pin for SPI peripheral.
 pub trait Mosi<const I: usize> {}
 
+/// Valid miso pin for SPI peripheral.
 pub trait Miso<const I: usize> {}
 
 impl<const I: usize, CLK, MOSI, MISO> Pins<I> for (CLK, MOSI, MISO)
