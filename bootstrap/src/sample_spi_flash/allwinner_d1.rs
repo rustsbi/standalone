@@ -3,11 +3,11 @@ use aw_soc::{
     time::U32Ext,
     uart::{self, Parity, Serial, StopBits, WordLength},
 };
-use d1_rom_rt::{entry, Handover, Parameters};
+use d1_rom_rt::{entry, Parameters};
 use embedded_hal::{serial::Write, spi};
 
 #[entry]
-fn main(params: Parameters) -> Handover {
+fn main(params: Parameters) {
     let config = uart::Config {
         baudrate: 115200.bps(),
         wordlength: WordLength::Eight,
@@ -19,7 +19,7 @@ fn main(params: Parameters) -> Handover {
     let mut serial = Serial::new(params.uart0, (tx, rx), config, &params.clocks, &params.ccu);
     serial.write(b"This is SPI flash sample!").ok();
     let clk = params.gpio.pc2.into_function::<2>();
-    let cs = params.gpio.pc3.into_function::<2>();
+    let _cs = params.gpio.pc3.into_function::<2>();
     let mosi = params.gpio.pc4.into_function::<2>();
     let miso = params.gpio.pc5.into_function::<2>();
     let spi = Spi::new(
@@ -32,5 +32,4 @@ fn main(params: Parameters) -> Handover {
     );
     // todo: SPI from rom configuration
     // let flash = flashes::SpiNand::new(spi);
-    Handover::from(params)
 }
