@@ -2,6 +2,7 @@
 
 use crate::{
     gpio::{Disabled, Function},
+    spi::{Clk, Miso, Mosi},
     uart::{Receive, Transmit},
 };
 
@@ -96,7 +97,8 @@ impl_gpio_pins! {
     pg18: ('G', 18, Disabled);
 }
 
-impl_uart_pins! {
+// UART PINS
+impl_pins_trait! {
     ('B', 0, Function<6>): Transmit<0>;
     ('B', 0, Function<7>): Transmit<2>;
     ('B', 1, Function<6>): Receive<0>;
@@ -149,4 +151,17 @@ impl_uart_pins! {
     ('G', 9, Function<5>): Receive<3>;
     ('G', 17, Function<2>): Transmit<2>;
     ('G', 18, Function<2>): Receive<2>;
+}
+
+// SPI PINS
+impl_pins_trait! {
+    ('B', 9, Function<5>): Miso<1>;
+    ('B', 10, Function<5>): Mosi<1>;
+    ('B', 11, Function<5>): Clk<1>;
+    ('C', 2, Function<2>): Clk<0>;
+    ('C', 4, Function<2>): Mosi<0>;
+    ('C', 5, Function<2>): Miso<0>;
+    ('D', 11, Function<4>): Clk<1>;
+    ('D', 12, Function<4>): Mosi<1>;
+    ('D', 13, Function<4>): Miso<1>;
 }

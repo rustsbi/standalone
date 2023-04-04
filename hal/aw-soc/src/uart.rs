@@ -187,15 +187,6 @@ where
     type ClockGate = ccu::UART<I>;
 }
 
-#[allow(unused)]
-macro_rules! impl_uart_pins {
-    ($(($p: expr, $i: expr, $m: ty): $Trait: ty;)+) => {
-        $(
-impl<A: base_address::BaseAddress> $Trait for $crate::gpio::Pin<A, $p, $i, $m> {}
-        )+
-    };
-}
-
 impl<A: BaseAddress, const I: usize, PINS: Pins<I>> embedded_hal::serial::ErrorType
     for Serial<A, I, PINS>
 {

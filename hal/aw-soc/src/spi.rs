@@ -483,6 +483,24 @@ pub trait Pins<const I: usize> {
     type Clock: ccu::ClockGate + ccu::ClockConfig<Source = SpiClockSource>;
 }
 
+/// Valid clk pin for SPI peripheral.
+pub trait Clk<const I: usize> {}
+
+/// Valid mosi pin for SPI peripheral.
+pub trait Mosi<const I: usize> {}
+
+/// Valid miso pin for SPI peripheral.
+pub trait Miso<const I: usize> {}
+
+impl<const I: usize, CLK, MOSI, MISO> Pins<I> for (CLK, MOSI, MISO)
+where
+    CLK: Clk<I>,
+    MOSI: Mosi<I>,
+    MISO: Miso<I>,
+{
+    type Clock = ccu::SPI<I>;
+}
+
 impl<A: BaseAddress, const I: usize, PINS: Pins<I>> embedded_hal::spi::SpiBus for Spi<A, I, PINS> {
     fn transfer(&mut self, read: &mut [u8], write: &[u8]) -> Result<(), Self::Error> {
         assert!(read.len() + write.len() <= u32::MAX as usize);

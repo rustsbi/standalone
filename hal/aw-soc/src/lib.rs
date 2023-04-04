@@ -146,6 +146,15 @@ pub mod time {
     }
 }
 
+#[allow(unused)]
+macro_rules! impl_pins_trait {
+    ($(($p: expr, $i: expr, $m: ty): $Trait: ty;)+) => {
+        $(
+impl<A: base_address::BaseAddress> $Trait for $crate::gpio::Pin<A, $p, $i, $m> {}
+        )+
+    };
+}
+
 mod wafer {
     #[cfg(feature = "d1")]
     mod d1;
