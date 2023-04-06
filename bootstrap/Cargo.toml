@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-d1-rom-rt = { path = "../d1-rom-rt" }
+d1-rom-rt = "0.0.0"
 flashes = { path = "../hal/flashes", optional = true }
-aw-soc = { path = "../hal/aw-soc", optional = true }
+aw-soc = { version = "0.0.0", optional = true }
 embedded-hal = { version = "1.0.0-alpha.9", optional = true }
 
 [features]

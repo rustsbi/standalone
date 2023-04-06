@@ -4,9 +4,6 @@ members = [
     "bootstrap",
     "machine",
     "supervisor",
-    "d1-rom-rt",
-    "d1-rom-rt/macros",
-    "hal/aw-soc",
     "hal/flashes",
     "xtask",
 ]
