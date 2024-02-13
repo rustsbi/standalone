@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
     # "standalone", # to be removed after rearrangement
     "bootstrap",
@@ -8,3 +9,8 @@ members = [
     "xtask",
 ]
 default-members = ["xtask"]
+
+[workspace.package]
+edition = "2021"
+license = "MulanPSL-2.0 OR MIT"
+repository = "https://github.com/rustsbi/standalone"

@@ -10,7 +10,6 @@ pub struct SpiNand<SPI> {
 impl<SPI> SpiNand<SPI>
 where
     SPI: SpiDevice,
-    SPI::Bus: SpiBus,
 {
     /// Identify the NAND flash device.
     #[inline]
