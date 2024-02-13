@@ -141,6 +141,7 @@ impl App {
         let idx = match self.platform {
             None => "platform-support.no-platform-chosen",
             Some(Platform::AllwinnerD1Series) => "platform-support.allwinner-d1-series",
+            Some(Platform::Sophgo2002Series) => "platform-support.sophgo-2002-series",
         };
         locale::get_string(idx, &self.locale).to_string()
     }
@@ -195,6 +196,7 @@ pub enum RouteId {
 
     // route for each platform:
     AllwinnerD1Series,
+    Sophgo2002Series,
 }
 
 #[derive(Debug)]
@@ -269,6 +271,7 @@ pub trait IsSupported {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Platform {
     AllwinnerD1Series,
+    Sophgo2002Series,
 }
 
 impl IsSupported for Platform {
@@ -277,6 +280,7 @@ impl IsSupported for Platform {
             (Self::AllwinnerD1Series, Bootstrap::JumpToDram) => true,
             (Self::AllwinnerD1Series, Bootstrap::HelloWorld) => true,
             (Self::AllwinnerD1Series, Bootstrap::SpiFlash) => true,
+            (Self::Sophgo2002Series, _) => false, // TODO sg2002 support
         }
     }
 }

@@ -57,6 +57,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
             RouteId::MachineMode => ui::draw_machine_mode(f, app),
             RouteId::PlatformSupport => ui::draw_platform_support(f, app),
             RouteId::AllwinnerD1Series => ui::draw_allwinner_d1_series(f, app),
+            RouteId::Sophgo2002Series => ui::draw_sophgo_2002_series(f, app),
             RouteId::StandardSbiFeat => ui::draw_standard_sbi_features(f, app),
             _ => todo!(),
         })?;

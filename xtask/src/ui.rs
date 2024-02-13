@@ -13,6 +13,8 @@ mod platform_support;
 pub use platform_support::draw_platform_support;
 mod allwinner_d1_series;
 pub use allwinner_d1_series::draw_allwinner_d1_series;
+mod sophgo_2002_series;
+pub use sophgo_2002_series::draw_sophgo_2002_series;
 mod standard_sbi_features;
 pub use standard_sbi_features::draw_standard_sbi_features;
 

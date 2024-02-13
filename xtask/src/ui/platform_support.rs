@@ -9,12 +9,14 @@ where
     #[rustfmt::skip]
     let items = vec![
         vec!["AllwinnerD1Series".to_string(), "platform-support.allwinner-d1-series".to_string(), "".to_string(), ">".to_string()],
+        vec!["Sophgo2002Series".to_string(), "platform-support.sophgo-2002-series".to_string(), "".to_string(), ">".to_string()],
         vec!["Back".to_string(), "back".to_string(), "".to_string(), "".to_string()],
     ];
     fn platform_support_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {
             0 => app.push_route(RouteId::AllwinnerD1Series),
-            1 => return ControlFlow::Break(()),
+            1 => app.push_route(RouteId::Sophgo2002Series),
+            2 => return ControlFlow::Break(()),
             _ => unreachable!(),
         };
         ControlFlow::Continue(())
@@ -24,7 +26,7 @@ where
         header: vec!["id", "home.item", "home.brief", ""],
         items,
         item_translate_idx: vec![1],
-        widths: vec![Min(18), Length(20), Length(30), Min(2)],
+        widths: vec![Min(18), Length(25), Length(30), Min(2)],
         control_flow_fn: platform_support_handle,
     }
     .draw(f, app)

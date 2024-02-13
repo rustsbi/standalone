@@ -1,5 +1,5 @@
 #![no_std]
-use embedded_hal::spi::{SpiBus, SpiDevice};
+use embedded_hal::spi::SpiDevice;
 const CMD_READ_ID: u8 = 0x9f;
 
 /// Nand flash on SPI.
