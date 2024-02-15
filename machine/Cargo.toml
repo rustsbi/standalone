@@ -1,9 +1,12 @@
+cargo-features = ["per-package-target"]
+
 [package]
 name = "rustsbi-machine"
-version = "0.1.0"
+version = "0.0.0"
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+forced-target = "riscv64imac-unknown-none-elf"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -12,8 +15,3 @@ riscv = "0.11.0"
 
 [features]
 default = []
-
-[[bin]]
-name = "rustsbi-machine"
-test = false
-bench = false
