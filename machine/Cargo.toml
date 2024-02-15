@@ -8,6 +8,12 @@ repository.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+riscv = "0.11.0"
 
 [features]
 default = []
+
+[[bin]]
+name = "rustsbi-machine"
+test = false
+bench = false
