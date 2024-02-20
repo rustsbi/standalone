@@ -19,6 +19,7 @@ impl<'a> Board<'a> {
     }
 
     pub fn set_uart16550_serial(&mut self, range: Range<usize>) {
+        println!("set_uart16550_serial range = {:x?}", range);
         self.serial = SerialHandle {
             uart16550: Some(unsafe { &*(range.start as *const _) }),
             range: 0x80200000..0x90000000usize, // TODO correct physical memory range

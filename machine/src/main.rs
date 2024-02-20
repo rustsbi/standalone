@@ -1,21 +1,27 @@
 #![feature(naked_functions, asm_const)]
 #![no_std]
 #![no_main]
+#[macro_use]
+extern crate rcore_console;
+// #[macro_use]
+// extern crate log;
 use crate::board::Board;
 use core::arch::asm;
-use rcore_console::println;
 
 mod board;
 mod console;
 mod fdt;
 mod opaque;
 
-extern "C" fn main(hart_id: usize, opaque: usize) {
+extern "C" fn main(hart_id: usize, opaque: usize) -> ! {
     let mut board = Board::new();
     if opaque::is_null(opaque) {
         // nothing to do now ...
         // TODO fixed base address
     }
+    console::load_console(unsafe { &*(0x10000000 as *const _) });
+    println!("Hello World (early console) 1!");
+    println!("Hello World (early console) 2!");
     // TODO #[cfg(feature = "fdt")]
     if let Ok(fdt) = fdt::try_read_fdt(opaque) {
         fdt::parse_fdt(fdt, &mut board);
@@ -30,6 +36,7 @@ extern "C" fn main(hart_id: usize, opaque: usize) {
     let _ = hart_id; // TODO
 
     // TODO
+    loop {}
 }
 
 // TODO contribute `Stack` struct into the crate `riscv`
@@ -49,7 +56,7 @@ unsafe extern "C" fn start() {
         "   la      sp, {stack}
             li      t0, {hart_stack_size}
             csrr    t1, mhartid
-            addi    t1, t1,  1
+            addi    t1, t1, 1
         1:  add     sp, sp, t0
             addi    t1, t1, -1
             bnez    t1, 1b",

@@ -7,6 +7,7 @@ use dtb_walker::{Dtb, DtbObj, HeaderError, Property};
 // TODO unbounded lifetime
 pub fn try_read_fdt<'a>(fdt_paddr: usize) -> Result<Dtb<'a>, HeaderError> {
     let fdt_ptr = fdt_paddr as *const u8;
+    println!("try_read_fdt, fdt_paddr = {:08x}", fdt_paddr);
     // TODO check permission of fdt_ptr, handle memory access error
     unsafe {
         Dtb::from_raw_parts_filtered(fdt_ptr, |e| {
@@ -19,8 +20,10 @@ pub fn try_read_fdt<'a>(fdt_paddr: usize) -> Result<Dtb<'a>, HeaderError> {
 }
 
 pub fn parse_fdt(fdt: Dtb, board: &mut Board) {
+    println!("parse_fdt begin");
     fdt.walk(|ctx, obj| match obj {
         DtbObj::SubNode { name } => {
+            println!("visit SubNode {:?}", core::str::from_utf8(name).unwrap());
             let current = ctx.last();
             if ctx.level() == 0 {
                 if name == b"soc" {
@@ -44,6 +47,7 @@ pub fn parse_fdt(fdt: Dtb, board: &mut Board) {
         //     StepOver
         // }
         DtbObj::Property(Property::Reg(mut reg)) => {
+            println!("visit DtbObj::Property Property::Reg {:?}", reg);
             let node = ctx.last();
             if node.starts_with(b"uart") || node.starts_with(b"serial") {
                 board.set_uart16550_serial(reg.next().unwrap());
