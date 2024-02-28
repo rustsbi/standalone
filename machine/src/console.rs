@@ -12,7 +12,7 @@ static CONSOLE: Mutex<Uart16550Wrap> = Mutex::new(Uart16550Wrap {
     uart16550: core::ptr::null(), //0x10000000 as *const _,
 });
 
-struct RCoreConsole;
+pub(crate) struct RCoreConsole;
 
 impl rcore_console::Console for RCoreConsole {
     #[inline]
@@ -38,6 +38,4 @@ pub fn load_console(uart16550: &Uart16550<u8>) {
     let mut console = CONSOLE.lock();
     *console = Uart16550Wrap { uart16550 };
     drop(console);
-    rcore_console::init_console(&RCoreConsole);
-    rcore_console::set_log_level(option_env!("LOG"));
 }

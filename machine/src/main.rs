@@ -2,9 +2,7 @@
 #![no_std]
 #![no_main]
 #[macro_use]
-extern crate rcore_console;
-// #[macro_use]
-// extern crate log;
+extern crate log;
 use crate::board::Board;
 use core::arch::asm;
 
@@ -19,19 +17,20 @@ extern "C" fn main(hart_id: usize, opaque: usize) -> ! {
         // nothing to do now ...
         // TODO fixed base address
     }
+    rcore_console::init_console(&crate::console::RCoreConsole);
+    rcore_console::set_log_level(option_env!("LOG"));
     console::load_console(unsafe { &*(0x10000000 as *const _) });
-    println!("Hello World (early console) 1!");
-    println!("Hello World (early console) 2!");
+    info!("Early console initialized using UART16550 @ 0x10000000");
     // TODO #[cfg(feature = "fdt")]
     if let Ok(fdt) = fdt::try_read_fdt(opaque) {
         fdt::parse_fdt(fdt, &mut board);
     }
 
-    if let Some(serial) = &board.uart16550_serial() {
+    if let Some(serial) = board.uart16550_serial() {
         console::load_console(serial);
     }
 
-    println!("Hello World!");
+    info!("Starting RustSBI machine-mode environment.");
 
     let _ = hart_id; // TODO
 
@@ -43,7 +42,7 @@ extern "C" fn main(hart_id: usize, opaque: usize) -> ! {
 #[repr(C, align(128))]
 struct Stack<const N: usize>([u8; N]);
 
-const LEN_STACK: usize = 1 * 1024;
+const LEN_STACK: usize = 128 * 1024;
 
 #[link_section = ".bss.uninit"]
 static STACK: Stack<LEN_STACK> = Stack([0; LEN_STACK]);

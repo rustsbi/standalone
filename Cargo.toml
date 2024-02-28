@@ -14,3 +14,6 @@ default-members = ["xtask"]
 edition = "2021"
 license = "MulanPSL-2.0 OR MIT"
 repository = "https://github.com/rustsbi/standalone"
+
+[profile.release]
+debug = true
