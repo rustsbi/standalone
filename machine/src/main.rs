@@ -8,6 +8,7 @@ use core::arch::asm;
 
 mod board;
 mod console;
+#[cfg(feature = "fdt")]
 mod fdt;
 mod opaque;
 
@@ -19,17 +20,13 @@ extern "C" fn main(hart_id: usize, opaque: usize) -> ! {
     }
     rcore_console::init_console(&crate::console::RCoreConsole);
     rcore_console::set_log_level(option_env!("LOG"));
-    console::load_console(unsafe { &*(0x10000000 as *const _) });
     info!("Early console initialized using UART16550 @ 0x10000000");
-    // TODO #[cfg(feature = "fdt")]
+    #[cfg(feature = "fdt")]
     if let Ok(fdt) = fdt::try_read_fdt(opaque) {
         fdt::parse_fdt(fdt, &mut board);
     }
 
-    if let Some(serial) = board.uart16550_serial() {
-        console::load_console(serial);
-    }
-
+    board.load_main_console();
     info!("Starting RustSBI machine-mode environment.");
 
     let _ = hart_id; // TODO

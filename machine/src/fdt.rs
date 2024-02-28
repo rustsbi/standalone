@@ -23,7 +23,7 @@ pub fn parse_fdt(fdt: Dtb, board: &mut Board) {
     trace!("parse_fdt begin");
     fdt.walk(|ctx, obj| match obj {
         DtbObj::SubNode { name } => {
-            // println!("visit SubNode {:?}", core::str::from_utf8(name));
+            trace!("visit SubNode {:?}", core::str::from_utf8(name));
             let current = ctx.last();
             if ctx.level() == 0 {
                 if name == b"soc" {
@@ -47,7 +47,7 @@ pub fn parse_fdt(fdt: Dtb, board: &mut Board) {
         //     StepOver
         // }
         DtbObj::Property(Property::Reg(mut reg)) => {
-            // println!("visit DtbObj::Property Property::Reg {:?}", reg);
+            trace!("visit DtbObj::Property Property::Reg {:?}", reg);
             let node = ctx.last();
             if node.starts_with(b"uart") || node.starts_with(b"serial") {
                 board.set_uart16550_serial(reg.next().unwrap());

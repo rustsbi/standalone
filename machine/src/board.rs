@@ -26,8 +26,10 @@ impl<'a> Board<'a> {
         }
     }
 
-    pub fn uart16550_serial(&self) -> Option<&Uart16550<u8>> {
-        self.serial.uart16550
+    pub fn load_main_console(&self) {
+        if let Some(uart16550) = self.serial.uart16550 {
+            crate::console::load_console_uart16550(uart16550)
+        }
     }
 }
 
