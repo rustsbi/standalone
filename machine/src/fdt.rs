@@ -1,8 +1,48 @@
+mod clint;
 mod uart16550;
 
-use crate::board::Board;
+use core::ops::Range;
 use dtb_walker::WalkOperation::{StepInto, StepOut, StepOver};
 use dtb_walker::{Dtb, DtbObj, HeaderError, Property};
+use rustsbi::RustSBI;
+
+#[derive(RustSBI)]
+pub struct FdtBoard<'a> {
+    #[rustsbi(dbcn)]
+    serial: uart16550::SerialHandle<'a>,
+    // #[rustsbi(time, ipi)]
+    // clint: ClintHandle<'a>,
+}
+
+impl<'a> FdtBoard<'a> {
+    pub fn new() -> Self {
+        Self {
+            serial: uart16550::SerialHandle {
+                uart16550: None,
+                range: 0x80200000..0x90000000usize, // TODO correct physical memory range
+            },
+        }
+    }
+
+    fn set_uart16550_serial(&mut self, range: Range<usize>) {
+        trace!("set_uart16550_serial range = {:x?}", range);
+        self.serial = uart16550::SerialHandle {
+            uart16550: Some(unsafe { &*(range.start as *const _) }),
+            range: 0x80200000..0x90000000usize, // TODO correct physical memory range
+        }
+    }
+
+    // pub fn set_clint(&mut self, range: Range<usize>) {
+    //     trace!("set_clint range = {:x?}", range);
+    //
+    // }
+
+    pub fn load_main_console(&self) {
+        if let Some(uart16550) = self.serial.uart16550 {
+            crate::console::load_console_uart16550(uart16550)
+        }
+    }
+}
 
 // TODO unbounded lifetime
 pub fn try_read_fdt<'a>(fdt_paddr: usize) -> Result<Dtb<'a>, HeaderError> {
@@ -19,20 +59,23 @@ pub fn try_read_fdt<'a>(fdt_paddr: usize) -> Result<Dtb<'a>, HeaderError> {
     }
 }
 
-pub fn parse_fdt(fdt: Dtb, board: &mut Board) {
+pub fn parse_fdt(fdt: Dtb, board: &mut FdtBoard) {
     trace!("parse_fdt begin");
     fdt.walk(|ctx, obj| match obj {
         DtbObj::SubNode { name } => {
-            trace!("visit SubNode {:?}", core::str::from_utf8(name));
-            let current = ctx.last();
+            trace!("visit SubNode {:?}", name.as_str());
+            let current = ctx.name();
             if ctx.level() == 0 {
-                if name == b"soc" {
+                if name == "soc".into() {
                     StepInto
                 } else {
                     StepOver
                 }
-            } else if current == b"soc" {
-                if name.starts_with(b"uart") || name.starts_with(b"serial") {
+            } else if current == "soc".into() {
+                if name.starts_with("uart")
+                    || name.starts_with("serial")
+                    || name.starts_with("clint")
+                {
                     StepInto
                 } else {
                     StepOver
@@ -48,9 +91,11 @@ pub fn parse_fdt(fdt: Dtb, board: &mut Board) {
         // }
         DtbObj::Property(Property::Reg(mut reg)) => {
             trace!("visit DtbObj::Property Property::Reg {:?}", reg);
-            let node = ctx.last();
-            if node.starts_with(b"uart") || node.starts_with(b"serial") {
+            let node = ctx.name();
+            if node.starts_with("uart") || node.starts_with("serial") {
                 board.set_uart16550_serial(reg.next().unwrap());
+                StepOut
+            } else if node.starts_with("clint") {
                 StepOut
             } else {
                 StepOver

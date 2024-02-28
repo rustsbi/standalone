@@ -3,33 +3,34 @@
 #![no_main]
 #[macro_use]
 extern crate log;
-use crate::board::Board;
 use core::arch::asm;
 
-mod board;
 mod console;
+mod dynamic;
 #[cfg(feature = "fdt")]
 mod fdt;
 mod opaque;
 
-extern "C" fn main(hart_id: usize, opaque: usize) -> ! {
-    let mut board = Board::new();
+extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> ! {
     if opaque::is_null(opaque) {
         // nothing to do now ...
         // TODO fixed base address
     }
-    rcore_console::init_console(&crate::console::RCoreConsole);
+    rcore_console::init_console(&console::RCoreConsole);
     rcore_console::set_log_level(option_env!("LOG"));
     info!("Early console initialized using UART16550 @ 0x10000000");
+
     #[cfg(feature = "fdt")]
     if let Ok(fdt) = fdt::try_read_fdt(opaque) {
+        let mut board = fdt::FdtBoard::new();
         fdt::parse_fdt(fdt, &mut board);
+        board.load_main_console();
     }
 
-    board.load_main_console();
     info!("Starting RustSBI machine-mode environment.");
 
     let _ = hart_id; // TODO
+    let _ = a2;
 
     // TODO
     loop {}

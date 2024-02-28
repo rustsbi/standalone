@@ -34,7 +34,8 @@ impl MachineConsole {
 unsafe impl Send for MachineConsole {}
 unsafe impl Sync for MachineConsole {}
 
-static CONSOLE: Mutex<MachineConsole> = Mutex::new(MachineConsole::Uart16550(0x10000000 as *const _));
+static CONSOLE: Mutex<MachineConsole> =
+    Mutex::new(MachineConsole::Uart16550(0x10000000 as *const _));
 
 pub(crate) struct RCoreConsole;
 
