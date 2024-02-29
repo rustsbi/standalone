@@ -72,7 +72,7 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
             // TODO options (we don't use it by now)
             trace!("dynamic info has extra option: {:x}", info.options);
             info!("Redirecting harts to address 0x{:x}", info.next_addr);
-            *write = Some(*info);
+            *write = Some(info);
         } else {
             debug!("read dynamic info failed");
             // TODO shutdown if applicable

@@ -17,8 +17,8 @@ pub struct DynamicInfo {
 }
 
 // TODO unconstrained lifetime
-pub fn try_read_dynamic<'a>(paddr: usize) -> Result<&'a DynamicInfo, ()> {
+pub fn try_read_dynamic(paddr: usize) -> Result<DynamicInfo, ()> {
     // TODO check pointer before dereference
-    let ans = unsafe { &*(paddr as *const DynamicInfo) };
+    let ans = unsafe { *(paddr as *const DynamicInfo) };
     Ok(ans)
 }
