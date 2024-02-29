@@ -9,33 +9,39 @@ use rustsbi::RustSBI;
 #[derive(RustSBI)]
 pub struct FdtBoard<'a> {
     #[rustsbi(dbcn)]
-    serial: uart16550::SerialHandle<'a>,
-    // #[rustsbi(time, ipi)]
-    // clint: ClintHandle<'a>,
+    serial: uart16550::Uart16550Handle<'a>,
+    #[rustsbi(time, ipi)]
+    clint: clint::ClintHandle<'a>,
 }
 
 impl<'a> FdtBoard<'a> {
     pub fn new() -> Self {
         Self {
-            serial: uart16550::SerialHandle {
+            serial: uart16550::Uart16550Handle {
                 uart16550: None,
                 range: 0x80200000..0x90000000usize, // TODO correct physical memory range
+            },
+            clint: clint::ClintHandle {
+                clint: None,
+                max_hart_id: 0,
             },
         }
     }
 
     fn set_uart16550_serial(&mut self, range: Range<usize>) {
         trace!("set_uart16550_serial range = {:x?}", range);
-        self.serial = uart16550::SerialHandle {
+        // TODO check address range
+        self.serial = uart16550::Uart16550Handle {
             uart16550: Some(unsafe { &*(range.start as *const _) }),
             range: 0x80200000..0x90000000usize, // TODO correct physical memory range
         }
     }
 
-    // pub fn set_clint(&mut self, range: Range<usize>) {
-    //     trace!("set_clint range = {:x?}", range);
-    //
-    // }
+    fn set_clint(&mut self, range: Range<usize>) {
+        trace!("set_clint range = {:x?}", range);
+        // TODO check address range
+        self.clint.clint = Some(unsafe { &*(range.start as *const _) })
+    }
 
     pub fn load_main_console(&self) {
         if let Some(uart16550) = self.serial.uart16550 {
@@ -90,12 +96,17 @@ pub fn parse_fdt(fdt: Dtb, board: &mut FdtBoard) {
         //     StepOver
         // }
         DtbObj::Property(Property::Reg(mut reg)) => {
-            trace!("visit DtbObj::Property Property::Reg {:?}", reg);
+            trace!("visit DtbObj::Property Property::Reg {:x?}", reg);
             let node = ctx.name();
             if node.starts_with("uart") || node.starts_with("serial") {
-                board.set_uart16550_serial(reg.next().unwrap());
+                if let Some(range) = reg.next() {
+                    board.set_uart16550_serial(range);
+                }
                 StepOut
             } else if node.starts_with("clint") {
+                if let Some(range) = reg.next() {
+                    board.set_clint(range);
+                }
                 StepOut
             } else {
                 StepOver

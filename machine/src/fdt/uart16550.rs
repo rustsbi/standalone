@@ -4,12 +4,12 @@ use core::ops::Range;
 use rustsbi::{Physical, SbiRet};
 use uart16550::Uart16550;
 
-pub struct SerialHandle<'a> {
+pub struct Uart16550Handle<'a> {
     pub uart16550: Option<&'a Uart16550<u8>>,
     pub range: Range<usize>,
 }
 
-impl<'a> rustsbi::Console for SerialHandle<'a> {
+impl<'a> rustsbi::Console for Uart16550Handle<'a> {
     fn write(&self, bytes: Physical<&[u8]>) -> SbiRet {
         if let Some(uart16550) = self.uart16550 {
             let start = bytes.phys_addr_lo();
