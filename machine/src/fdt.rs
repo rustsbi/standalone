@@ -23,7 +23,7 @@ impl<'a> FdtBoard<'a> {
             },
             clint: clint::ClintHandle {
                 clint: None,
-                max_hart_id: 0,
+                max_hart_id: crate::NUM_HART_MAX - 1,
             },
         }
     }

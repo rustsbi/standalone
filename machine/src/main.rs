@@ -11,7 +11,11 @@ mod dynamic;
 mod fdt;
 mod opaque;
 
-use core::sync::atomic::{Ordering, AtomicBool};
+use core::sync::atomic::{AtomicBool, Ordering};
+
+const LEN_STACK_PER_HART: usize = 16 * 1024;
+pub(crate) const NUM_HART_MAX: usize = 8;
+const LEN_STACK: usize = LEN_STACK_PER_HART * NUM_HART_MAX;
 
 static BOOT_FINISHED: AtomicBool = AtomicBool::new(false);
 static BOOT_LOCK: spin::Mutex<()> = spin::Mutex::new(());
@@ -30,7 +34,7 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
 
         trace!("hart {} obtained boot lock", hart_id);
         info!("Early console initialized using UART16550 @ 0x10000000");
-    
+
         #[cfg(feature = "fdt")]
         if let Ok(fdt) = fdt::try_read_fdt(opaque) {
             let mut board = fdt::FdtBoard::new();
@@ -38,8 +42,8 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
             board.load_main_console();
         }
 
-        BOOT_FINISHED.store(true, Ordering::Relaxed);
         info!("Starting RustSBI machine-mode environment.");
+        BOOT_FINISHED.store(true, Ordering::Relaxed);
     } else {
         while !BOOT_FINISHED.load(Ordering::Relaxed) {
             core::hint::spin_loop()
@@ -48,14 +52,27 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
 
     #[cfg(feature = "dynamic")]
     if let Some(mut write) = DYNAMIC_INFO.try_write() {
-        trace!("hart {} is reading dynamic info from physical address 0x{:x}", hart_id, a2);
-        if let Ok(dynamic_info) = dynamic::try_read_dynamic(a2) {
-            trace!("dynamic info magic: {:x}, version: {}", dynamic_info.magic, dynamic_info.version);
+        trace!(
+            "hart {} is reading dynamic info from physical address 0x{:x}",
+            hart_id,
+            a2
+        );
+        if let Ok(info) = dynamic::try_read_dynamic(a2) {
+            trace!(
+                "dynamic info magic: {:x}, version: {}",
+                info.magic,
+                info.version
+            );
             // TODO check magic and version
-            trace!("dynamic info would like to jump to address 0x{:x} with mode {}", dynamic_info.next_addr, dynamic_info.next_mode);
+            trace!(
+                "dynamic info would like to jump to address 0x{:x} with mode {}",
+                info.next_addr,
+                info.next_mode
+            );
             // TODO options (we don't use it by now)
-            trace!("dynamic info has extra option: {:x}", dynamic_info.options);
-            *write = Some(*dynamic_info);
+            trace!("dynamic info has extra option: {:x}", info.options);
+            info!("Redirecting harts to address 0x{:x}", info.next_addr);
+            *write = Some(*info);
         } else {
             debug!("read dynamic info failed");
             // TODO shutdown if applicable
@@ -64,14 +81,11 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
 
     match () {
         #[cfg(feature = "dynamic")]
-        () => {
-            loop {
-                if let Some(info) = *DYNAMIC_INFO.read() {
-                    info!("Redirecting hart {} to address 0x{:x}", hart_id, info.next_addr);
-                    return info.next_addr
-                }
-                core::hint::spin_loop()
+        () => loop {
+            if let Some(info) = *DYNAMIC_INFO.read() {
+                return info.next_addr;
             }
+            core::hint::spin_loop()
         },
         // TODO non-dynamic supervisor address
         #[cfg(not(feature = "dynamic"))]
@@ -79,7 +93,7 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
             debug!("non-dynamic jump address is not yet supported");
             // TODO shutdown if applicable
             loop {}
-        },
+        }
     }
 }
 
@@ -89,10 +103,6 @@ struct Stack<const N: usize>([u8; N]);
 
 #[link_section = ".bss.uninit"]
 static STACK: Stack<LEN_STACK> = Stack([0; LEN_STACK]);
-
-pub(crate) const LEN_STACK_PER_HART: usize = 16 * 1024;
-pub(crate) const NUM_HART_MAX: usize = 8;
-pub(crate) const LEN_STACK: usize = LEN_STACK_PER_HART * NUM_HART_MAX;
 
 #[naked]
 #[link_section = ".text.entry"]
@@ -135,7 +145,7 @@ unsafe extern "C" fn entry() -> ! {
         // 4. Run Rust main function
         "   j       {main}",
         // 5. Jump to following boot sequences
-        "   jr      a0", // TODO 
+        "   jr      a0", // TODO
         per_hart_stack_size = const LEN_STACK_PER_HART,
         stack = sym STACK,
         main = sym main,
@@ -145,6 +155,6 @@ unsafe extern "C" fn entry() -> ! {
 
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
-    error!("panicked at {:?}", info);
+    error!("panicked at {}", info);
     loop {}
 }
