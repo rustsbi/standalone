@@ -53,6 +53,7 @@ impl rcore_console::Console for RCoreConsole {
     }
 }
 
+#[cfg(feature = "fdt")] // TODO
 pub fn load_console_uart16550(uart16550: &Uart16550<u8>) {
     let mut console = CONSOLE.lock();
     *console = MachineConsole::Uart16550(uart16550);

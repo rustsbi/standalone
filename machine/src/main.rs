@@ -6,10 +6,10 @@
 extern crate log;
 
 mod console;
+#[cfg(feature = "dynamic")]
 mod dynamic;
 #[cfg(feature = "fdt")]
 mod fdt;
-mod opaque;
 
 use core::sync::atomic::{AtomicBool, Ordering};
 
@@ -23,11 +23,6 @@ static BOOT_LOCK: spin::Mutex<()> = spin::Mutex::new(());
 static DYNAMIC_INFO: spin::RwLock<Option<dynamic::DynamicInfo>> = spin::RwLock::new(None);
 
 extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
-    if opaque::is_null(opaque) {
-        // nothing to do now ...
-        // TODO fixed base address
-    }
-
     if let Some(_) = BOOT_LOCK.try_lock() {
         rcore_console::init_console(&console::RCoreConsole);
         rcore_console::set_log_level(option_env!("LOG"));
@@ -41,8 +36,14 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
             fdt::parse_fdt(fdt, &mut board);
             board.load_main_console();
         }
+        #[cfg(not(feature = "fdt"))]
+        let _ = opaque;
 
-        info!("Starting RustSBI machine-mode environment.");
+        info!("RustSBI version {}", rustsbi::VERSION);
+        for line in rustsbi::LOGO.lines() {
+            info!("{}", line);
+        }
+        info!("Initializing RustSBI machine-mode environment.");
         BOOT_FINISHED.store(true, Ordering::Relaxed);
     } else {
         while !BOOT_FINISHED.load(Ordering::Relaxed) {
@@ -74,10 +75,12 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
             info!("Redirecting harts to address 0x{:x}", info.next_addr);
             *write = Some(info);
         } else {
-            debug!("read dynamic info failed");
+            error!("read dynamic info failed");
             // TODO shutdown if applicable
         }
     }
+    #[cfg(not(feature = "dynamic"))]
+    let _ = a2;
 
     match () {
         #[cfg(feature = "dynamic")]
@@ -90,7 +93,7 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
         // TODO non-dynamic supervisor address
         #[cfg(not(feature = "dynamic"))]
         () => {
-            debug!("non-dynamic jump address is not yet supported");
+            error!("non-dynamic jump address is not yet supported");
             // TODO shutdown if applicable
             loop {}
         }

@@ -1,5 +1,6 @@
 [alias]
 xtask = "run --package xtask --release --"
 termconfig = "xtask config"
+menuconfig = "xtask config"
 make = "xtask make"
 flash = "xtask flash"
