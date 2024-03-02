@@ -1,5 +1,5 @@
-use os_xtask_utils::{BinUtil, Cargo, CommandExt};
 use crate::Config;
+use os_xtask_utils::{BinUtil, Cargo, CommandExt};
 
 const TARGET: &'static str = "riscv64imac-unknown-none-elf";
 

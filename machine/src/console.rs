@@ -1,25 +1,20 @@
+use core::{
+    fmt::{self, Write},
+    str::FromStr,
+};
+use log::{Level, LevelFilter};
 use spin::Mutex;
 use uart16550::Uart16550;
 
-enum MachineConsole {
+#[doc(hidden)]
+pub enum MachineConsole {
     Uart16550(*const Uart16550<u8>),
 }
 
-impl MachineConsole {
+impl fmt::Write for MachineConsole {
     #[inline]
-    fn put_char(&self, ch: u8) {
-        match self {
-            Self::Uart16550(uart16550) => {
-                while unsafe { &**uart16550 }.write(&[ch]) == 0 {
-                    core::hint::spin_loop();
-                }
-            }
-        }
-    }
-
-    #[inline]
-    fn put_str(&self, string: &str) {
-        let mut bytes = string.as_bytes();
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        let mut bytes = s.as_bytes();
         match self {
             Self::Uart16550(uart16550) => {
                 while !bytes.is_empty() {
@@ -28,29 +23,51 @@ impl MachineConsole {
                 }
             }
         }
+        Ok(())
     }
 }
 
 unsafe impl Send for MachineConsole {}
 unsafe impl Sync for MachineConsole {}
 
-static CONSOLE: Mutex<MachineConsole> =
+#[doc(hidden)]
+pub static CONSOLE: Mutex<MachineConsole> =
     Mutex::new(MachineConsole::Uart16550(0x10000000 as *const _));
 
-pub(crate) struct RCoreConsole;
+pub fn init() {
+    log::set_max_level(
+        option_env!("RUST_LOG")
+            .and_then(|s| LevelFilter::from_str(s).ok())
+            .unwrap_or(LevelFilter::Info),
+    );
+    log::set_logger(&Logger).unwrap();
+}
 
-impl rcore_console::Console for RCoreConsole {
+struct Logger;
+
+impl log::Log for Logger {
     #[inline]
-    fn put_char(&self, c: u8) {
-        let console = CONSOLE.lock();
-        console.put_char(c)
+    fn enabled(&self, _metadata: &log::Metadata) -> bool {
+        true
     }
 
     #[inline]
-    fn put_str(&self, s: &str) {
-        let console = CONSOLE.lock();
-        console.put_str(s)
+    fn log(&self, record: &log::Record) {
+        let color_code: u8 = match record.level() {
+            Level::Error => 31,
+            Level::Warn => 93,
+            Level::Info => 34,
+            Level::Debug => 32,
+            Level::Trace => 90,
+        };
+        println!(
+            "\x1b[{color_code}m[{:>5}] {}\x1b[0m",
+            record.level(),
+            record.args(),
+        );
     }
+
+    fn flush(&self) {}
 }
 
 #[cfg(feature = "fdt")] // TODO

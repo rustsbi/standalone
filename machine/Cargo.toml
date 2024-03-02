@@ -14,7 +14,6 @@ forced-target = "riscv64imac-unknown-none-elf"
 aclint = "0.0.0"
 dtb-walker = { git = "https://github.com/YdrMaster/dtb-walker" }
 log = "0.4.20"
-rcore-console = "0.0.0"
 riscv = "0.11.0"
 rustsbi = { version = "0.4.0-alpha.1", features = ["machine"] }
 spin = "0.9.8"

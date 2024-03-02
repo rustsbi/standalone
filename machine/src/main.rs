@@ -4,6 +4,8 @@
 
 #[macro_use]
 extern crate log;
+#[macro_use]
+mod macros;
 
 mod console;
 #[cfg(feature = "dynamic")]
@@ -24,8 +26,7 @@ static DYNAMIC_INFO: spin::RwLock<Option<dynamic::DynamicInfo>> = spin::RwLock::
 
 extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
     if let Some(_) = BOOT_LOCK.try_lock() {
-        rcore_console::init_console(&console::RCoreConsole);
-        rcore_console::set_log_level(option_env!("LOG"));
+        console::init();
 
         trace!("hart {} obtained boot lock", hart_id);
         info!("Early console initialized using UART16550 @ 0x10000000");
