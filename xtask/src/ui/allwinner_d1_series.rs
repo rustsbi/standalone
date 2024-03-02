@@ -12,7 +12,7 @@ where
             false => "platform-support.not-chosen",
         }
     }
-    let choose_platform = choose_str(matches!(app.platform, Some(Platform::AllwinnerD1Series)));
+    let choose_platform = choose_str(matches!(app.platform, Platform::AllwinnerD1Series));
     #[rustfmt::skip]
     let items = vec![
         vec!["ChoosePlatform".to_string(), "platform-support.choose-platform".to_string(), choose_platform.to_string(), "".to_string()],
@@ -20,7 +20,7 @@ where
     ];
     fn machine_mode_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {
-            0 => app.platform = Some(Platform::AllwinnerD1Series),
+            0 => app.platform = Platform::AllwinnerD1Series,
             1 => return ControlFlow::Break(()),
             _ => unreachable!(),
         };

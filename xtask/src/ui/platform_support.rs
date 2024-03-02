@@ -1,4 +1,8 @@
-use crate::{app::RouteId, ui::Builder, App};
+use crate::{
+    app::{Platform, RouteId},
+    ui::Builder,
+    App,
+};
 use std::ops::ControlFlow;
 use tui::{backend::Backend, layout::Constraint::*, Frame};
 
@@ -8,15 +12,17 @@ where
 {
     #[rustfmt::skip]
     let items = vec![
+        vec!["NoSpecificPlatform".to_string(), "".to_string(), "".to_string(), ">".to_string()],
         vec!["AllwinnerD1Series".to_string(), "platform-support.allwinner-d1-series".to_string(), "".to_string(), ">".to_string()],
         vec!["Sophgo2002Series".to_string(), "platform-support.sophgo-2002-series".to_string(), "".to_string(), ">".to_string()],
         vec!["Back".to_string(), "back".to_string(), "".to_string(), "".to_string()],
     ];
     fn platform_support_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {
-            0 => app.push_route(RouteId::AllwinnerD1Series),
-            1 => app.push_route(RouteId::Sophgo2002Series),
-            2 => return ControlFlow::Break(()),
+            0 => app.platform = Platform::NoSpecificPlatform,
+            1 => app.push_route(RouteId::AllwinnerD1Series),
+            2 => app.push_route(RouteId::Sophgo2002Series),
+            3 => return ControlFlow::Break(()),
             _ => unreachable!(),
         };
         ControlFlow::Continue(())

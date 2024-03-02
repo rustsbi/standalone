@@ -50,6 +50,7 @@ fn bootstrap_features_from_config(config: &Config) -> Vec<&'static str> {
         Bootstrap::JumpToDram => vec!["jump-to-dram"],
         Bootstrap::HelloWorld => vec!["sample-hello-world"],
         Bootstrap::SpiFlash => vec!["sample-spi-flash"],
+        Bootstrap::NoBootstrap => todo!(),
     }
 }
 

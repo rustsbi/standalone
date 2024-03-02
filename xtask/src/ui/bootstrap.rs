@@ -10,13 +10,15 @@ where
     let items = vec![
         vec!["JumpToDram".to_string(), "bootstrap.jump-to-dram".to_string(), app.jump_to_dram_brief(), "".to_string()],
         vec!["SampleProgram".to_string(), "bootstrap.sample-program".to_string(), app.sample_program_brief(), ">".to_string()],
+        vec!["NoBootstrap".to_string(), "bootstrap.no-bootstrap".to_string(), "TODO".to_string(), ">".to_string()],
         vec!["Back".to_string(), "back".to_string(), "".to_string(), "".to_string()],
     ];
     fn bootstrap_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {
             0 => app.bootstrap = Bootstrap::JumpToDram,
             1 => app.push_route(RouteId::SampleProgram),
-            2 => return ControlFlow::Break(()),
+            2 => app.bootstrap = Bootstrap::NoBootstrap,
+            3 => return ControlFlow::Break(()),
             _ => unreachable!(),
         };
         ControlFlow::Continue(())

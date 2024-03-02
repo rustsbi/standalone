@@ -13,7 +13,7 @@ pub struct App {
     pub bootstrap: Bootstrap,
     pub standard_sbi_enabled: StandardSbiEnabled,
     pub machine_mode_fdt_ident_enabled: bool,
-    pub platform: Option<Platform>,
+    pub platform: Platform,
     pub supervisor_mode_brief: String,
     pub bootload_media_brief: String,
     pub compile_flags_brief: String,
@@ -96,6 +96,9 @@ impl App {
             Bootstrap::JumpToDram => {
                 locale::get_string("bootstrap.jump-to-dram", &self.locale).to_string()
             }
+            Bootstrap::NoBootstrap => {
+                locale::get_string("bootstrap.no-bootstrap", &self.locale).to_string()
+            }
             _ => self.sample_program_brief(),
         }
     }
@@ -140,9 +143,9 @@ impl App {
     }
     pub fn platform_support_brief(&self) -> String {
         let idx = match self.platform {
-            None => "platform-support.no-platform-chosen",
-            Some(Platform::AllwinnerD1Series) => "platform-support.allwinner-d1-series",
-            Some(Platform::Sophgo2002Series) => "platform-support.sophgo-2002-series",
+            Platform::AllwinnerD1Series => "platform-support.allwinner-d1-series",
+            Platform::Sophgo2002Series => "platform-support.sophgo-2002-series",
+            Platform::NoSpecificPlatform => "platform-support.no-specific-platform",
         };
         locale::get_string(idx, &self.locale).to_string()
     }
@@ -172,7 +175,7 @@ impl Default for App {
             control_flow_fn: None,
             locale: "zh-CN".to_string(),
             bootstrap: Bootstrap::JumpToDram,
-            platform: None,
+            platform: Platform::NoSpecificPlatform,
             standard_sbi_enabled: StandardSbiEnabled::default(),
             supervisor_mode_brief: String::new(),
             bootload_media_brief: String::new(),
@@ -220,6 +223,7 @@ impl Route {
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Bootstrap {
+    NoBootstrap,
     JumpToDram,
 
     // Sample programs
@@ -231,6 +235,7 @@ impl Bootstrap {
     fn is_machine_mode_supported(&self) -> bool {
         match self {
             Bootstrap::JumpToDram => true,
+            Bootstrap::NoBootstrap => true,
             _ => false,
         }
     }
@@ -275,6 +280,7 @@ pub trait IsSupported {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Platform {
+    NoSpecificPlatform,
     AllwinnerD1Series,
     Sophgo2002Series,
 }
@@ -282,9 +288,12 @@ pub enum Platform {
 impl IsSupported for Platform {
     fn is_bootstrap_supported(&self, bootstrap: &Bootstrap) -> bool {
         match (self, bootstrap) {
+            (Self::NoSpecificPlatform, Bootstrap::NoBootstrap) => true,
+            (Self::NoSpecificPlatform, _) => false,
             (Self::AllwinnerD1Series, Bootstrap::JumpToDram) => true,
             (Self::AllwinnerD1Series, Bootstrap::HelloWorld) => true,
             (Self::AllwinnerD1Series, Bootstrap::SpiFlash) => true,
+            (Self::AllwinnerD1Series, Bootstrap::NoBootstrap) => true,
             (Self::Sophgo2002Series, _) => false, // TODO sg2002 support
         }
     }
