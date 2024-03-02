@@ -12,6 +12,7 @@ pub struct App {
     pub locale: String,
     pub bootstrap: Bootstrap,
     pub standard_sbi_enabled: StandardSbiEnabled,
+    pub machine_mode_fdt_ident_enabled: bool,
     pub platform: Option<Platform>,
     pub supervisor_mode_brief: String,
     pub bootload_media_brief: String,
@@ -156,6 +157,7 @@ impl From<crate::Config> for App {
             bootstrap: value.bootstrap,
             standard_sbi_enabled: value.standard_sbi_enabled.unwrap_or_default(),
             platform: value.platform,
+            machine_mode_fdt_ident_enabled: value.machine_fdt_ident_enabled.unwrap_or(true),
             ..Default::default()
         }
     }
@@ -176,6 +178,7 @@ impl Default for App {
             bootload_media_brief: String::new(),
             compile_flags_brief: String::new(),
             help_ver_about_brief: String::new(),
+            machine_mode_fdt_ident_enabled: true,
         }
     }
 }
@@ -192,8 +195,10 @@ pub enum RouteId {
     CompileFlags,
     HelpVerAbout,
     SampleProgram,
+    // machine mode features
     StandardSbiFeat,
-
+    FdtIdent,
+    DynamicInfoIdent,
     // route for each platform:
     AllwinnerD1Series,
     Sophgo2002Series,

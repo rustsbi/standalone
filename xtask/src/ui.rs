@@ -17,6 +17,8 @@ mod sophgo_2002_series;
 pub use sophgo_2002_series::draw_sophgo_2002_series;
 mod standard_sbi_features;
 pub use standard_sbi_features::draw_standard_sbi_features;
+mod fdt_ident;
+pub use fdt_ident::draw_fdt_ident;
 
 use crate::{
     app::App,

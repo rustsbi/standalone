@@ -8,13 +8,17 @@ where
 {
     #[rustfmt::skip]
     let items = vec![
-        vec!["StandardSbiFeat".to_string(), "machine-mode.standard-sbi".to_string(), app.standard_sbi_brief(), ">".to_string()],
+        vec!["StandardSbiFeat".to_string(), "machine-mode.standard-sbi-feat".to_string(), app.standard_sbi_brief(), ">".to_string()],
+        vec!["FdtIdent".to_string(), "machine-mode.fdt-ident".to_string(), "TODO".to_string(), ">".to_string()],
+        vec!["DynamicInfoIdent".to_string(), "machine-mode.dynamic-info-ident".to_string(), "TODO".to_string(), ">".to_string()],
         vec!["Back".to_string(), "back".to_string(), "".to_string(), "".to_string()],
     ];
     fn machine_mode_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {
             0 => app.push_route(RouteId::StandardSbiFeat),
-            1 => return ControlFlow::Break(()),
+            1 => app.push_route(RouteId::FdtIdent),
+            2 => app.push_route(RouteId::DynamicInfoIdent),
+            3 => return ControlFlow::Break(()),
             _ => unreachable!(),
         };
         ControlFlow::Continue(())

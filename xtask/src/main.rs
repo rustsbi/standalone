@@ -94,6 +94,7 @@ pub struct Config {
     locale: Option<String>,
     bootstrap: Bootstrap,
     standard_sbi_enabled: Option<StandardSbiEnabled>,
+    machine_fdt_ident_enabled: Option<bool>,
     platform: Option<Platform>,
 }
 
@@ -116,6 +117,7 @@ fn save_app_to_string(app: &App, buf: &mut String) -> io::Result<()> {
     doc["standard-sbi-enabled"]["hsm"] = value(hsm);
     doc["standard-sbi-enabled"]["srst"] = value(srst);
     doc["standard-sbi-enabled"]["pmu"] = value(pmu);
+    doc["machine-fdt-ident-enabled"] = value(app.machine_mode_fdt_ident_enabled);
     if let Some(platform) = &app.platform {
         doc["platform"] = value(to_variant_name(platform).unwrap());
     }
