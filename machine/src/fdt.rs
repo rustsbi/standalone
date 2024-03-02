@@ -1,4 +1,5 @@
 mod clint;
+mod sifive_test;
 mod uart16550;
 
 use core::ops::Range;
@@ -12,9 +13,12 @@ pub struct FdtBoard<'a> {
     serial: uart16550::Uart16550Handle<'a>,
     #[rustsbi(time, ipi)]
     clint: clint::ClintHandle<'a>,
+    #[rustsbi(reset)]
+    sifive_test: sifive_test::SifiveTestHandle<'a>,
 }
 
 impl<'a> FdtBoard<'a> {
+    #[inline]
     pub fn new() -> Self {
         Self {
             serial: uart16550::Uart16550Handle {
@@ -25,9 +29,11 @@ impl<'a> FdtBoard<'a> {
                 clint: None,
                 max_hart_id: crate::NUM_HART_MAX - 1,
             },
+            sifive_test: sifive_test::SifiveTestHandle { sifive_test: None },
         }
     }
 
+    #[inline]
     fn set_uart16550_serial(&mut self, range: Range<usize>) {
         trace!("set_uart16550_serial range = {:x?}", range);
         // TODO check address range
@@ -37,15 +43,27 @@ impl<'a> FdtBoard<'a> {
         }
     }
 
+    #[inline]
     fn set_clint(&mut self, range: Range<usize>) {
         trace!("set_clint range = {:x?}", range);
         // TODO check address range
         self.clint.clint = Some(unsafe { &*(range.start as *const _) })
     }
 
-    pub fn load_main_console(&self) {
+    #[inline]
+    fn set_sifive_test(&mut self, range: Range<usize>) {
+        trace!("set_sifive_test range = {:x?}", range);
+        // TODO check address range
+        self.sifive_test.sifive_test = Some(unsafe { &*(range.start as *const _) })
+    }
+
+    #[inline]
+    pub fn init(&self) {
         if let Some(uart16550) = self.serial.uart16550 {
             crate::console::load_console_uart16550(uart16550)
+        }
+        if let Some(sifive_test) = self.sifive_test.sifive_test {
+            crate::reset::load_reset_sifive_test(sifive_test)
         }
     }
 }
@@ -81,6 +99,7 @@ pub fn parse_fdt(fdt: Dtb, board: &mut FdtBoard) {
                 if name.starts_with("uart")
                     || name.starts_with("serial")
                     || name.starts_with("clint")
+                    || name.starts_with("test")
                 {
                     StepInto
                 } else {
@@ -106,6 +125,11 @@ pub fn parse_fdt(fdt: Dtb, board: &mut FdtBoard) {
             } else if node.starts_with("clint") {
                 if let Some(range) = reg.next() {
                     board.set_clint(range);
+                }
+                StepOut
+            } else if node.starts_with("test") {
+                if let Some(range) = reg.next() {
+                    board.set_sifive_test(range);
                 }
                 StepOut
             } else {

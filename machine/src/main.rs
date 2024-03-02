@@ -12,20 +12,35 @@ mod console;
 mod dynamic;
 #[cfg(feature = "fdt")]
 mod fdt;
+mod reset;
 
-use core::sync::atomic::{AtomicBool, Ordering};
+use core::sync::atomic::{AtomicUsize, Ordering};
 
 const LEN_STACK_PER_HART: usize = 16 * 1024;
 pub(crate) const NUM_HART_MAX: usize = 8;
 const LEN_STACK: usize = LEN_STACK_PER_HART * NUM_HART_MAX;
 
-static BOOT_FINISHED: AtomicBool = AtomicBool::new(false);
-static BOOT_LOCK: spin::Mutex<()> = spin::Mutex::new(());
+static BOOT_LOCK: AtomicUsize = AtomicUsize::new(UNINITIALIZED);
+const UNINITIALIZED: usize = 0;
+const EARLY_BOOTING: usize = 1;
+const FINISHED: usize = 2;
+
 #[cfg(feature = "dynamic")]
 static DYNAMIC_INFO: spin::RwLock<Option<dynamic::DynamicInfo>> = spin::RwLock::new(None);
 
 extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
-    if let Some(_) = BOOT_LOCK.try_lock() {
+    // TODO the hart clearing the '.bss' segment harts may enter this main function later,
+    // causing the variable 'BOOT_LOCK' cleared to zero after the `compare_exchange` here.
+    let old_boot_state = match BOOT_LOCK.compare_exchange(
+        UNINITIALIZED,
+        EARLY_BOOTING,
+        Ordering::SeqCst,
+        Ordering::SeqCst,
+    ) {
+        Ok(s) | Err(s) => s,
+    };
+
+    if old_boot_state == UNINITIALIZED {
         console::init();
 
         trace!("hart {} obtained boot lock", hart_id);
@@ -35,7 +50,7 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
         if let Ok(fdt) = fdt::try_read_fdt(opaque) {
             let mut board = fdt::FdtBoard::new();
             fdt::parse_fdt(fdt, &mut board);
-            board.load_main_console();
+            board.init();
         }
         #[cfg(not(feature = "fdt"))]
         let _ = opaque;
@@ -45,9 +60,9 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
             info!("{}", line);
         }
         info!("Initializing RustSBI machine-mode environment.");
-        BOOT_FINISHED.store(true, Ordering::Relaxed);
+        BOOT_LOCK.store(FINISHED, Ordering::SeqCst);
     } else {
-        while !BOOT_FINISHED.load(Ordering::Relaxed) {
+        while BOOT_LOCK.load(Ordering::SeqCst) != FINISHED {
             core::hint::spin_loop()
         }
     }
@@ -77,7 +92,7 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
             *write = Some(info);
         } else {
             error!("read dynamic info failed");
-            // TODO shutdown if applicable
+            reset::fail()
         }
     }
     #[cfg(not(feature = "dynamic"))]
@@ -94,9 +109,15 @@ extern "C" fn main(hart_id: usize, opaque: usize, a2: usize) -> usize {
         // TODO non-dynamic supervisor address
         #[cfg(not(feature = "dynamic"))]
         () => {
-            error!("non-dynamic jump address is not yet supported");
-            // TODO shutdown if applicable
-            loop {}
+            static NON_DYNAMIC_LOG_ONCE: spin::Once<()> = spin::Once::new();
+            NON_DYNAMIC_LOG_ONCE.call_once(|| {
+                error!("non-dynamic jump address is not yet supported");
+                reset::fail()
+            });
+            trace!("wait before shutdown");
+            loop {
+                core::hint::spin_loop()
+            }
         }
     }
 }
