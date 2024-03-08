@@ -12,7 +12,7 @@ where
 {
     #[rustfmt::skip]
     let items = vec![
-        vec!["NoSpecificPlatform", "", "", ">"],
+        vec!["NoSpecificPlatform", "platform-support.no-specific-platform", "", ">"],
         vec!["AllwinnerD1Series", "platform-support.allwinner-d1-series", "", ">"],
         vec!["Sophgo2002Series", "platform-support.sophgo-2002-series", "", ">"],
         vec!["Back", "back", "", ""],
