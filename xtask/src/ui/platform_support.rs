@@ -12,10 +12,10 @@ where
 {
     #[rustfmt::skip]
     let items = vec![
-        vec!["NoSpecificPlatform".to_string(), "".to_string(), "".to_string(), ">".to_string()],
-        vec!["AllwinnerD1Series".to_string(), "platform-support.allwinner-d1-series".to_string(), "".to_string(), ">".to_string()],
-        vec!["Sophgo2002Series".to_string(), "platform-support.sophgo-2002-series".to_string(), "".to_string(), ">".to_string()],
-        vec!["Back".to_string(), "back".to_string(), "".to_string(), "".to_string()],
+        vec!["NoSpecificPlatform", "", "", ">"],
+        vec!["AllwinnerD1Series", "platform-support.allwinner-d1-series", "", ">"],
+        vec!["Sophgo2002Series", "platform-support.sophgo-2002-series", "", ">"],
+        vec!["Back", "back", "", ""],
     ];
     fn platform_support_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {

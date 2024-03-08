@@ -29,10 +29,7 @@ where
         vec!["SrstExtension", "standard-sbi-features.srst", choose_str(srst)],
         vec!["PmuExtension", "standard-sbi-features.pmu", choose_str(pmu)],
         vec!["Back", "back", ""],
-    ]
-    .iter()
-    .map(|v| v.iter().map(|s| s.to_string()).collect::<Vec<_>>())
-    .collect::<Vec<_>>();
+    ];
     fn machine_mode_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {
             0 => app.standard_sbi_enabled.timer = !app.standard_sbi_enabled.timer,

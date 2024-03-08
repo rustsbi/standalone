@@ -36,7 +36,7 @@ use tui::{
 struct Builder {
     pub title: &'static str,
     pub header: Vec<&'static str>,
-    pub items: Vec<Vec<String>>,
+    pub items: Vec<Vec<&'static str>>,
     pub item_translate_idx: Vec<usize>,
     pub control_flow_fn: fn(usize, &mut App) -> ControlFlow<(), ()>,
     pub widths: Vec<Constraint>,
@@ -50,7 +50,7 @@ impl Builder {
         let mut items = self.items;
         for i in self.item_translate_idx {
             for row in &mut items {
-                row[i] = row[i].translate(&app.locale).to_string();
+                row[i] = row[i].translate(&app.locale);
             }
         }
         let rects = Layout::default()
@@ -76,7 +76,7 @@ impl Builder {
                 .max()
                 .unwrap_or(0)
                 + 1;
-            let cells = item.iter().map(|c| Cell::from(c.as_str()));
+            let cells = item.iter().map(|c| Cell::from(*c));
             Row::new(cells).height(height as u16).bottom_margin(0)
         });
         let t = Table::new(rows)

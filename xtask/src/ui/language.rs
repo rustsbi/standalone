@@ -18,10 +18,7 @@ where
             locale::get_string("language.display.en-US", "en-US"),
         ],
         vec!["Back", locale::get_string("back", &app.locale)],
-    ]
-    .iter()
-    .map(|v| v.iter().map(|s| s.to_string()).collect::<Vec<_>>())
-    .collect::<Vec<_>>();
+    ];
     fn language_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         let locale = match idx {
             0 => "zh-CN",

@@ -14,10 +14,10 @@ pub struct App {
     pub standard_sbi_enabled: StandardSbiEnabled,
     pub machine_mode_fdt_ident_enabled: bool,
     pub platform: Platform,
-    pub supervisor_mode_brief: String,
-    pub bootload_media_brief: String,
-    pub compile_flags_brief: String,
-    pub help_ver_about_brief: String,
+    pub supervisor_mode_brief: &'static str,
+    pub bootload_media_brief: &'static str,
+    pub compile_flags_brief: &'static str,
+    pub help_ver_about_brief: &'static str,
 }
 
 impl App {
@@ -87,23 +87,19 @@ impl App {
 }
 
 impl App {
-    pub fn language_brief(&self) -> String {
-        locale::get_string("language.display.current", &self.locale).to_string()
+    pub fn language_brief(&self) -> &'static str {
+        locale::get_string("language.display.current", &self.locale)
     }
-    pub fn bootstrap_brief(&self) -> String {
+    pub fn bootstrap_brief(&self) -> &'static str {
         // when we have other programs, change this function
         match self.bootstrap {
-            Bootstrap::JumpToDram => {
-                locale::get_string("bootstrap.jump-to-dram", &self.locale).to_string()
-            }
-            Bootstrap::NoBootstrap => {
-                locale::get_string("bootstrap.no-bootstrap", &self.locale).to_string()
-            }
-            _ => self.sample_program_brief(),
+            Bootstrap::JumpToDram => locale::get_string("bootstrap.jump-to-dram", &self.locale),
+            Bootstrap::NoBootstrap => locale::get_string("bootstrap.no-bootstrap", &self.locale),
+            _ => self.bootstrap_sample_program_brief(),
         }
     }
-    pub fn jump_to_dram_brief(&self) -> String {
-        let idx = if self.platform.is_bootstrap_supported(&self.bootstrap) {
+    pub fn bootstrap_jump_to_dram_brief(&self) -> &'static str {
+        let idx = if self.platform.is_bootstrap_supported(&Bootstrap::JumpToDram) {
             if self.bootstrap == Bootstrap::JumpToDram {
                 "sample-program.chosen"
             } else {
@@ -112,17 +108,32 @@ impl App {
         } else {
             "sample-program.platform-not-supported"
         };
-        locale::get_string(idx, &self.locale).to_string()
+        locale::get_string(idx, &self.locale)
     }
-    pub fn sample_program_brief(&self) -> String {
+    pub fn bootstrap_sample_program_brief(&self) -> &'static str {
         let idx = match self.bootstrap {
             Bootstrap::HelloWorld => "sample-program.hello-world",
             Bootstrap::SpiFlash => "sample-program.spi-flash",
             _ => "sample-program.not-sample-program",
         };
-        locale::get_string(idx, &self.locale).to_string()
+        locale::get_string(idx, &self.locale)
     }
-    pub fn standard_sbi_brief(&self) -> String {
+    pub fn bootstrap_no_bootstrap_brief(&self) -> &'static str {
+        let idx = if self
+            .platform
+            .is_bootstrap_supported(&Bootstrap::NoBootstrap)
+        {
+            if self.bootstrap == Bootstrap::NoBootstrap {
+                "sample-program.chosen"
+            } else {
+                "sample-program.not-chosen"
+            }
+        } else {
+            "sample-program.platform-not-supported"
+        };
+        locale::get_string(idx, &self.locale)
+    }
+    pub fn standard_sbi_brief(&self) -> &'static str {
         let idx = if self.standard_sbi_enabled.sbi_v1p0_ready() {
             "standard-sbi-features.v1p0-prepared"
         } else if self.standard_sbi_enabled.no_sbi_support() {
@@ -130,24 +141,24 @@ impl App {
         } else {
             "standard-sbi-features.partial"
         };
-        locale::get_string(idx, &self.locale).to_string()
+        locale::get_string(idx, &self.locale)
     }
-    pub fn machine_mode_brief(&self) -> String {
+    pub fn machine_mode_brief(&self) -> &'static str {
         if !self.bootstrap.is_machine_mode_supported() {
             let idx = "machine-mode.not-supported";
-            locale::get_string(idx, &self.locale).to_string()
+            locale::get_string(idx, &self.locale)
         } else {
             // in future when we have custom sbi features here, change this function
             self.standard_sbi_brief()
         }
     }
-    pub fn platform_support_brief(&self) -> String {
+    pub fn platform_support_brief(&self) -> &'static str {
         let idx = match self.platform {
             Platform::AllwinnerD1Series => "platform-support.allwinner-d1-series",
             Platform::Sophgo2002Series => "platform-support.sophgo-2002-series",
             Platform::NoSpecificPlatform => "platform-support.no-specific-platform",
         };
-        locale::get_string(idx, &self.locale).to_string()
+        locale::get_string(idx, &self.locale)
     }
 }
 
@@ -177,10 +188,10 @@ impl Default for App {
             bootstrap: Bootstrap::JumpToDram,
             platform: Platform::NoSpecificPlatform,
             standard_sbi_enabled: StandardSbiEnabled::default(),
-            supervisor_mode_brief: String::new(),
-            bootload_media_brief: String::new(),
-            compile_flags_brief: String::new(),
-            help_ver_about_brief: String::new(),
+            supervisor_mode_brief: "",
+            bootload_media_brief: "",
+            compile_flags_brief: "",
+            help_ver_about_brief: "",
             machine_mode_fdt_ident_enabled: true,
         }
     }

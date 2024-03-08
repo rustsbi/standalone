@@ -15,8 +15,8 @@ where
     let choose_platform = choose_str(matches!(app.platform, Platform::Sophgo2002Series));
     #[rustfmt::skip]
     let items = vec![
-        vec!["ChoosePlatform".to_string(), "platform-support.choose-platform".to_string(), choose_platform.to_string(), "".to_string()],
-        vec!["Back".to_string(), "back".to_string(), "".to_string(), "".to_string()],
+        vec!["ChoosePlatform", "platform-support.choose-platform", choose_platform, ""],
+        vec!["Back", "back", "", ""],
     ];
     fn machine_mode_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {

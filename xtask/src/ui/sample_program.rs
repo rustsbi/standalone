@@ -16,9 +16,9 @@ where
     let spi_flash = choose_str(matches!(app.bootstrap, Bootstrap::SpiFlash));
     #[rustfmt::skip]
     let items = vec![
-        vec!["HelloWorld".to_string(), "sample-program.hello-world".to_string(), hello_world.to_string()],
-        vec!["SpiFlash".to_string(), "sample-program.spi-flash".to_string(), spi_flash.to_string()],
-        vec!["Back".to_string(), "back".to_string(), "".to_string()],
+        vec!["HelloWorld", "sample-program.hello-world", hello_world],
+        vec!["SpiFlash", "sample-program.spi-flash", spi_flash],
+        vec!["Back", "back", ""],
     ];
     fn sample_program_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {

@@ -10,10 +10,7 @@ where
     let items = vec![
         vec!["FdtIdentEnabled", "fdt-ident.fdt-ident-enabled", ""],
         vec!["Back", "back", ""],
-    ]
-    .iter()
-    .map(|v| v.iter().map(|s| s.to_string()).collect::<Vec<_>>())
-    .collect::<Vec<_>>();
+    ];
     fn machine_mode_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
         match idx {
             0 => app.machine_mode_fdt_ident_enabled = !app.machine_mode_fdt_ident_enabled,
