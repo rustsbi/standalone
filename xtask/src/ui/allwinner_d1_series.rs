@@ -1,11 +1,8 @@
 use crate::{app::Platform, ui::Builder, App};
+use ratatui::{layout::Constraint::*, Frame};
 use std::ops::ControlFlow;
-use tui::{backend::Backend, layout::Constraint::*, Frame};
 
-pub fn draw_allwinner_d1_series<B>(f: &mut Frame<B>, app: &mut App)
-where
-    B: Backend,
-{
+pub fn draw_allwinner_d1_series(f: &mut Frame, app: &mut App) {
     fn choose_str(enabled: bool) -> &'static str {
         match enabled {
             true => "platform-support.chosen",
@@ -31,7 +28,7 @@ where
         header: vec!["id", "home.item", "home.brief", ""],
         items,
         item_translate_idx: vec![1, 2],
-        widths: vec![Min(18), Length(20), Length(30), Min(2)],
+        widths: vec![Length(18), Length(20), Length(30), Min(2)],
         control_flow_fn: machine_mode_handle,
     }
     .draw(f, app)

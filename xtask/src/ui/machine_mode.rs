@@ -1,11 +1,8 @@
 use crate::{ui::Builder, App, RouteId};
+use ratatui::{layout::Constraint::*, Frame};
 use std::ops::ControlFlow;
-use tui::{backend::Backend, layout::Constraint::*, Frame};
 
-pub fn draw_machine_mode<B>(f: &mut Frame<B>, app: &mut App)
-where
-    B: Backend,
-{
+pub fn draw_machine_mode(f: &mut Frame, app: &mut App) {
     #[rustfmt::skip]
     let items = vec![
         vec!["StandardSbiFeat", "machine-mode.standard-sbi-feat", app.standard_sbi_brief(), ">"],
@@ -28,7 +25,7 @@ where
         header: vec!["id", "home.item", "home.brief", ""],
         items,
         item_translate_idx: vec![1],
-        widths: vec![Min(18), Length(20), Length(30), Min(2)],
+        widths: vec![Length(18), Length(20), Length(30), Min(2)],
         control_flow_fn: machine_mode_handle,
     }
     .draw(f, app)

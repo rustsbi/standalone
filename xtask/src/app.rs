@@ -1,8 +1,8 @@
 use crate::locale;
 use core::mem;
+use ratatui::widgets::TableState;
 use serde::{Deserialize, Serialize};
 use std::ops::ControlFlow;
-use tui::widgets::TableState;
 
 pub struct App {
     current_navigation: Route,

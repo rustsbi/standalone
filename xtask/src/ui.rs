@@ -25,8 +25,7 @@ use crate::{
     locale::{self, Translate},
 };
 use core::ops::ControlFlow;
-use tui::{
-    backend::Backend,
+use ratatui::{
     layout::{Constraint, Layout},
     style::{Color, Modifier, Style},
     widgets::{Block, BorderType, Borders, Cell, Row, Table},
@@ -43,10 +42,7 @@ struct Builder {
 }
 
 impl Builder {
-    pub fn draw<B>(self, f: &mut Frame<B>, app: &mut App)
-    where
-        B: Backend,
-    {
+    pub fn draw(self, f: &mut Frame, app: &mut App) {
         let mut items = self.items;
         for i in self.item_translate_idx {
             for row in &mut items {
@@ -79,7 +75,7 @@ impl Builder {
             let cells = item.iter().map(|c| Cell::from(*c));
             Row::new(cells).height(height as u16).bottom_margin(0)
         });
-        let t = Table::new(rows)
+        let t = Table::new(rows, &self.widths)
             .header(header)
             .block(
                 Block::default()
@@ -88,8 +84,7 @@ impl Builder {
                     .title(locale::get_string(self.title, &app.locale)),
             )
             .highlight_style(selected_style)
-            .highlight_symbol(">> ")
-            .widths(&self.widths);
+            .highlight_symbol(">> ");
         let state = &mut app.current_route_mut().table_state;
         f.render_stateful_widget(t, rects[0], state);
 

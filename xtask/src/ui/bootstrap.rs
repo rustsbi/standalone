@@ -1,11 +1,8 @@
 use crate::{app::Bootstrap, ui::Builder, App, RouteId};
+use ratatui::{layout::Constraint::*, Frame};
 use std::ops::ControlFlow;
-use tui::{backend::Backend, layout::Constraint::*, Frame};
 
-pub fn draw_bootstrap<B>(f: &mut Frame<B>, app: &mut App)
-where
-    B: Backend,
-{
+pub fn draw_bootstrap(f: &mut Frame, app: &mut App) {
     #[rustfmt::skip]
     let items = vec![
         vec!["JumpToDram", "bootstrap.jump-to-dram", app.bootstrap_jump_to_dram_brief(), ""],
@@ -28,7 +25,7 @@ where
         header: vec!["id", "home.item", "home.brief", ""],
         items,
         item_translate_idx: vec![1],
-        widths: vec![Min(18), Length(20), Length(30), Min(2)],
+        widths: vec![Length(18), Length(20), Length(30), Min(2)],
         control_flow_fn: bootstrap_handle,
     }
     .draw(f, app)

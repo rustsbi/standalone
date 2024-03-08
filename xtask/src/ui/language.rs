@@ -1,11 +1,8 @@
 use crate::{locale, ui::Builder, App};
+use ratatui::{layout::Constraint::*, Frame};
 use std::ops::ControlFlow;
-use tui::{backend::Backend, layout::Constraint::*, Frame};
 
-pub fn draw_language<B>(f: &mut Frame<B>, app: &mut App)
-where
-    B: Backend,
-{
+pub fn draw_language(f: &mut Frame, app: &mut App) {
     let items = vec![
         vec![
             "zh-CN",
@@ -34,7 +31,7 @@ where
         header: vec!["id", "language.language"],
         items,
         item_translate_idx: vec![1],
-        widths: vec![Min(18), Length(30), Length(30)],
+        widths: vec![Length(18), Length(30), Length(30)],
         control_flow_fn: language_handle,
     }
     .draw(f, app)

@@ -1,11 +1,8 @@
 use crate::{app::StandardSbiEnabled, ui::Builder, App};
+use ratatui::{layout::Constraint::*, Frame};
 use std::ops::ControlFlow;
-use tui::{backend::Backend, layout::Constraint::*, Frame};
 
-pub fn draw_standard_sbi_features<B>(f: &mut Frame<B>, app: &mut App)
-where
-    B: Backend,
-{
+pub fn draw_standard_sbi_features(f: &mut Frame, app: &mut App) {
     let StandardSbiEnabled {
         timer,
         ipi,
@@ -48,7 +45,7 @@ where
         header: vec!["id", "home.item", "home.brief"],
         items,
         item_translate_idx: vec![1, 2],
-        widths: vec![Min(18), Min(30), Length(12)],
+        widths: vec![Length(18), Min(30), Length(12)],
         control_flow_fn: machine_mode_handle,
     }
     .draw(f, app)

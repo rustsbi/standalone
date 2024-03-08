@@ -3,13 +3,10 @@ use crate::{
     ui::Builder,
     App,
 };
+use ratatui::{layout::Constraint::*, Frame};
 use std::ops::ControlFlow;
-use tui::{backend::Backend, layout::Constraint::*, Frame};
 
-pub fn draw_platform_support<B>(f: &mut Frame<B>, app: &mut App)
-where
-    B: Backend,
-{
+pub fn draw_platform_support(f: &mut Frame, app: &mut App) {
     #[rustfmt::skip]
     let items = vec![
         vec!["NoSpecificPlatform", "platform-support.no-specific-platform", "", ">"],
@@ -32,7 +29,7 @@ where
         header: vec!["id", "home.item", "home.brief", ""],
         items,
         item_translate_idx: vec![1],
-        widths: vec![Min(18), Length(25), Length(30), Min(2)],
+        widths: vec![Length(18), Length(25), Length(30), Min(2)],
         control_flow_fn: platform_support_handle,
     }
     .draw(f, app)

@@ -1,11 +1,8 @@
 use crate::{ui::Builder, App};
+use ratatui::{layout::Constraint::*, Frame};
 use std::ops::ControlFlow;
-use tui::{backend::Backend, layout::Constraint::*, Frame};
 
-pub fn draw_fdt_ident<B>(f: &mut Frame<B>, app: &mut App)
-where
-    B: Backend,
-{
+pub fn draw_fdt_ident(f: &mut Frame, app: &mut App) {
     #[rustfmt::skip]
     let items = vec![
         vec!["FdtIdentEnabled", "fdt-ident.fdt-ident-enabled", ""],
@@ -24,7 +21,7 @@ where
         header: vec!["id", "home.item", "home.brief"],
         items,
         item_translate_idx: vec![1, 2],
-        widths: vec![Min(18), Min(30), Length(12)],
+        widths: vec![Length(18), Min(30), Length(12)],
         control_flow_fn: machine_mode_handle,
     }
     .draw(f, app)

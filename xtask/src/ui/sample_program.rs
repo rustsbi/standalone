@@ -1,11 +1,8 @@
 use crate::{app::Bootstrap, ui::Builder, App};
+use ratatui::{layout::Constraint::*, Frame};
 use std::ops::ControlFlow;
-use tui::{backend::Backend, layout::Constraint::*, Frame};
 
-pub fn draw_sample_program<B>(f: &mut Frame<B>, app: &mut App)
-where
-    B: Backend,
-{
+pub fn draw_sample_program(f: &mut Frame, app: &mut App) {
     fn choose_str(enabled: bool) -> &'static str {
         match enabled {
             true => "sample-program.chosen",
@@ -34,7 +31,7 @@ where
         header: vec!["id", "home.item", "home.brief", ""],
         items,
         item_translate_idx: vec![1, 2],
-        widths: vec![Min(18), Length(30), Length(20)],
+        widths: vec![Length(18), Length(30), Length(20)],
         control_flow_fn: sample_program_handle,
     }
     .draw(f, app)
