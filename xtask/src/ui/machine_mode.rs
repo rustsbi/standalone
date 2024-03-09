@@ -6,8 +6,8 @@ pub fn draw_machine_mode(f: &mut Frame, app: &mut App) {
     #[rustfmt::skip]
     let items = vec![
         vec!["StandardSbiFeat", "machine-mode.standard-sbi-feat", app.standard_sbi_brief(), ">"],
-        vec!["FdtIdent", "machine-mode.fdt-ident", "TODO", ">"],
-        vec!["DynamicInfoIdent", "machine-mode.dynamic-info-ident", "TODO", ">"],
+        vec!["FdtIdent", "machine-mode.fdt-ident", app.fdtident_brief(), ">"],
+        vec!["DynamicInfoIdent", "machine-mode.dynamic-info-ident", app.dynamicinfoident_brief(), ">"],
         vec!["Back", "back", "", ""],
     ];
     fn machine_mode_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {

@@ -13,6 +13,7 @@ pub struct App {
     pub bootstrap: Bootstrap,
     pub standard_sbi_enabled: StandardSbiEnabled,
     pub machine_mode_fdt_ident_enabled: bool,
+    pub machine_mode_dynamicinfo_ident_enabled: bool,
     pub platform: Platform,
     pub supervisor_mode_brief: &'static str,
     pub bootload_media_brief: &'static str,
@@ -152,6 +153,17 @@ impl App {
             self.standard_sbi_brief()
         }
     }
+
+    pub fn fdtident_brief(&self) -> &'static str {
+        let idx = "fdt-ident.fdt-ident-enabled";
+        locale::get_string(idx, &self.locale)
+    }
+
+    pub fn dynamicinfoident_brief(&self) -> &'static str {
+        let idx = "dynamic-info-ident.dynamic-info-ident-enabled";
+        locale::get_string(idx, &self.locale)
+    }
+
     pub fn platform_support_brief(&self) -> &'static str {
         let idx = match self.platform {
             Platform::AllwinnerD1Series => "platform-support.allwinner-d1-series",
@@ -193,6 +205,7 @@ impl Default for App {
             compile_flags_brief: "",
             help_ver_about_brief: "",
             machine_mode_fdt_ident_enabled: true,
+            machine_mode_dynamicinfo_ident_enabled: true,
         }
     }
 }

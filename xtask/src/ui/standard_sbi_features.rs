@@ -13,8 +13,8 @@ pub fn draw_standard_sbi_features(f: &mut Frame, app: &mut App) {
     } = app.standard_sbi_enabled;
     fn choose_str(enabled: bool) -> &'static str {
         match enabled {
-            true => "standard-sbi-features.enabled",
-            false => "standard-sbi-features.disabled",
+            true => "enabled",
+            false => "disabled",
         }
     }
     #[rustfmt::skip]

@@ -19,6 +19,8 @@ mod standard_sbi_features;
 pub use standard_sbi_features::draw_standard_sbi_features;
 mod fdt_ident;
 pub use fdt_ident::draw_fdt_ident;
+mod dynamicinfo_ident;
+pub use dynamicinfo_ident::draw_dynamicinfo_ident;
 
 use crate::{
     app::App,
