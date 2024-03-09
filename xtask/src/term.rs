@@ -74,6 +74,10 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         None => break Ok(()),
                     },
                 },
+                KeyCode::Char('q') => {
+                    // TODO: Add pop alert window in the future
+                    break Ok(())
+                },
                 // fixme: add Char('/') for search
                 _ => {}
             }
