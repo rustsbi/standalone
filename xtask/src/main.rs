@@ -110,6 +110,11 @@ fn save_app_to_string(app: &App, buf: &mut String) -> io::Result<()> {
         hsm,
         srst,
         pmu,
+        dbcn,
+        susp,
+        cppc,
+        nacl,
+        sta,
     } = app.standard_sbi_enabled;
     doc["standard-sbi-enabled"]["timer"] = value(timer);
     doc["standard-sbi-enabled"]["ipi"] = value(ipi);
@@ -117,6 +122,11 @@ fn save_app_to_string(app: &App, buf: &mut String) -> io::Result<()> {
     doc["standard-sbi-enabled"]["hsm"] = value(hsm);
     doc["standard-sbi-enabled"]["srst"] = value(srst);
     doc["standard-sbi-enabled"]["pmu"] = value(pmu);
+    doc["standard-sbi-enabled"]["dbcn"] = value(dbcn);
+    doc["standard-sbi-enabled"]["susp"] = value(susp);
+    doc["standard-sbi-enabled"]["cppc"] = value(cppc);
+    doc["standard-sbi-enabled"]["nacl"] = value(nacl);
+    doc["standard-sbi-enabled"]["sta"] = value(sta);
     doc["machine-fdt-ident-enabled"] = value(app.machine_mode_fdt_ident_enabled);
     doc["platform"] = value(to_variant_name(&app.platform).unwrap());
     *buf = doc.to_string();
