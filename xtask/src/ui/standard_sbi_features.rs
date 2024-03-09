@@ -10,6 +10,11 @@ pub fn draw_standard_sbi_features(f: &mut Frame, app: &mut App) {
         hsm,
         srst,
         pmu,
+        dbcn,
+        susp,
+        cppc,
+        nacl,
+        sta,
     } = app.standard_sbi_enabled;
     fn choose_str(enabled: bool) -> &'static str {
         match enabled {
@@ -25,6 +30,11 @@ pub fn draw_standard_sbi_features(f: &mut Frame, app: &mut App) {
         vec!["HsmExtension", "standard-sbi-features.hsm", choose_str(hsm)],
         vec!["SrstExtension", "standard-sbi-features.srst", choose_str(srst)],
         vec!["PmuExtension", "standard-sbi-features.pmu", choose_str(pmu)],
+        vec!["DbcnExtension", "standard-sbi-features.dbcn", choose_str(dbcn)],
+        vec!["SuspExtension", "standard-sbi-features.susp", choose_str(susp)],
+        vec!["CppcExtension", "standard-sbi-features.cppc", choose_str(cppc)],
+        vec!["NaclExtension", "standard-sbi-features.nacl", choose_str(nacl)],
+        vec!["StaExtension", "standard-sbi-features.sta", choose_str(sta)],
         vec!["Back", "back", ""],
     ];
     fn machine_mode_handle(idx: usize, app: &mut App) -> ControlFlow<(), ()> {
@@ -35,7 +45,12 @@ pub fn draw_standard_sbi_features(f: &mut Frame, app: &mut App) {
             3 => app.standard_sbi_enabled.hsm = !app.standard_sbi_enabled.hsm,
             4 => app.standard_sbi_enabled.srst = !app.standard_sbi_enabled.srst,
             5 => app.standard_sbi_enabled.pmu = !app.standard_sbi_enabled.pmu,
-            6 => return ControlFlow::Break(()),
+            6 => app.standard_sbi_enabled.dbcn = !app.standard_sbi_enabled.dbcn,
+            7 => app.standard_sbi_enabled.susp = !app.standard_sbi_enabled.susp,
+            8 => app.standard_sbi_enabled.cppc = !app.standard_sbi_enabled.cppc,
+            9 => app.standard_sbi_enabled.nacl = !app.standard_sbi_enabled.nacl,
+            10 => app.standard_sbi_enabled.sta = !app.standard_sbi_enabled.sta,
+            11 => return ControlFlow::Break(()),
             _ => unreachable!(),
         };
         ControlFlow::Continue(())

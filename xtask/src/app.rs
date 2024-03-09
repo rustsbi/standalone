@@ -134,8 +134,8 @@ impl App {
         locale::get_string(idx, &self.locale)
     }
     pub fn standard_sbi_brief(&self) -> &'static str {
-        let idx = if self.standard_sbi_enabled.sbi_v1p0_ready() {
-            "standard-sbi-features.v1p0-prepared"
+        let idx = if self.standard_sbi_enabled.sbi_v2p0_ready() {
+            "standard-sbi-features.v2p0-prepared"
         } else if self.standard_sbi_enabled.no_sbi_support() {
             "standard-sbi-features.no-support"
         } else {
@@ -260,14 +260,39 @@ pub struct StandardSbiEnabled {
     pub hsm: bool,
     pub srst: bool,
     pub pmu: bool,
+    pub dbcn: bool,
+    pub susp: bool,
+    pub cppc: bool,
+    pub nacl: bool,
+    pub sta: bool,
 }
 
 impl StandardSbiEnabled {
-    fn sbi_v1p0_ready(&self) -> bool {
-        self.timer && self.ipi && self.rfence && self.hsm && self.srst && self.pmu
+    fn sbi_v2p0_ready(&self) -> bool {
+        self.timer
+            && self.ipi
+            && self.rfence
+            && self.hsm
+            && self.srst
+            && self.pmu
+            && self.dbcn
+            && self.susp
+            && self.cppc
+            && self.nacl
+            && self.sta
     }
     fn no_sbi_support(&self) -> bool {
-        !self.timer && !self.ipi && !self.rfence && !self.hsm && !self.srst && !self.pmu
+        !self.timer
+            && !self.ipi
+            && !self.rfence
+            && !self.hsm
+            && !self.srst
+            && !self.pmu
+            && !self.dbcn
+            && !self.susp
+            && !self.cppc
+            && !self.nacl
+            && !self.sta
     }
 }
 
@@ -281,6 +306,11 @@ impl Default for StandardSbiEnabled {
             hsm: true,
             srst: true,
             pmu: true,
+            dbcn: true,
+            susp: true,
+            cppc: true,
+            nacl: true,
+            sta: true,
         }
     }
 }
