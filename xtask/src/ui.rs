@@ -28,7 +28,7 @@ use core::ops::ControlFlow;
 use ratatui::{
     layout::{Constraint, Layout},
     style::{Color, Modifier, Style},
-    widgets::{Block, BorderType, Borders, Cell, Row, Table},
+    widgets::{Block, BorderType, Borders, Cell, HighlightSpacing, Row, Table},
     Frame,
 };
 
@@ -84,6 +84,7 @@ impl Builder {
                     .title(locale::get_string(self.title, &app.locale)),
             )
             .highlight_style(selected_style)
+            .highlight_spacing(HighlightSpacing::Always)
             .highlight_symbol(">> ");
         let state = &mut app.current_route_mut().table_state;
         f.render_stateful_widget(t, rects[0], state);

@@ -227,7 +227,7 @@ pub struct Route {
 
 impl Route {
     pub fn from_route_id(id: RouteId) -> Self {
-        let table_state = TableState::default().with_selected(usize::MAX);
+        let table_state = TableState::default();
         Self { id, table_state }
     }
 }
