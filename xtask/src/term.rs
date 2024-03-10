@@ -4,8 +4,7 @@ use crate::{
     ui,
 };
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
-    execute,
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::{
@@ -15,17 +14,24 @@ use ratatui::{
 use std::{error::Error, io, ops::ControlFlow};
 
 pub fn terminal_main(app: &mut App) -> Result<(), Box<dyn Error>> {
-    // setup terminal
+    crossterm::execute!(io::stdout(), EnterAlternateScreen, EnableMouseCapture)?;
     enable_raw_mode()?;
-    let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
-    let backend = CrosstermBackend::new(stdout);
 
-    let mut terminal = TerminalWrapper {
-        inner: Terminal::new(backend)?,
-    };
+    let backend = CrosstermBackend::new(io::stdout());
 
-    let res = run_app(terminal.as_mut(), app);
+    let mut terminal = Terminal::new(backend)?;
+    terminal.hide_cursor()?;
+
+    let original_hook = std::panic::take_hook();
+
+    std::panic::set_hook(Box::new(move |panic| {
+        reset_terminal().unwrap();
+        original_hook(panic);
+    }));
+
+    let res = run_app(&mut terminal, app);
+
+    reset_terminal()?;
 
     if let Err(err) = res {
         println!("{:?}", err)
@@ -34,15 +40,10 @@ pub fn terminal_main(app: &mut App) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn free_terminal<B: Backend + io::Write>(terminal: &mut Terminal<B>) -> Result<(), Box<dyn Error>> {
-    // restore terminal
+// Ref: ratatui examples/panic.rs
+fn reset_terminal() -> Result<(), Box<dyn Error>> {
     disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
-    terminal.show_cursor()?;
+    crossterm::execute!(io::stdout(), LeaveAlternateScreen, DisableMouseCapture)?;
     Ok(())
 }
 
@@ -64,6 +65,9 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
         })?;
 
         if let Event::Key(key) = event::read()? {
+            if key.kind != KeyEventKind::Press {
+                continue;
+            }
             match key.code {
                 KeyCode::Down => app.next(),
                 KeyCode::Up => app.previous(),
@@ -76,8 +80,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 },
                 KeyCode::Char('q') => {
                     // TODO: Add pop alert window in the future
-                    break Ok(())
-                },
+                    break Ok(());
+                }
                 // fixme: add Char('/') for search
                 _ => {}
             }
@@ -105,28 +109,3 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
 
 //     }
 // }
-
-// allow to execute LeaveAlternateScreen and DisableMouseCapture when terminal panics.
-struct TerminalWrapper<B: Backend + io::Write> {
-    inner: Terminal<B>,
-}
-
-impl<B: Backend + io::Write> Drop for TerminalWrapper<B> {
-    fn drop(&mut self) {
-        if let Err(err) = free_terminal(&mut self.inner) {
-            eprintln!("Failed to free terminal: {}", err);
-        }
-    }
-}
-
-impl<B: Backend + io::Write> AsRef<Terminal<B>> for TerminalWrapper<B> {
-    fn as_ref(&self) -> &Terminal<B> {
-        &self.inner
-    }
-}
-
-impl<B: Backend + io::Write> AsMut<Terminal<B>> for TerminalWrapper<B> {
-    fn as_mut(&mut self) -> &mut Terminal<B> {
-        &mut self.inner
-    }
-}

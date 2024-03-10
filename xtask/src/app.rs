@@ -4,6 +4,7 @@ use ratatui::widgets::TableState;
 use serde::{Deserialize, Serialize};
 use std::ops::ControlFlow;
 
+#[derive(Debug)]
 pub struct App {
     current_navigation: Route,
     navigation_stack: Vec<Route>,
@@ -226,8 +227,7 @@ pub struct Route {
 
 impl Route {
     pub fn from_route_id(id: RouteId) -> Self {
-        let mut table_state = TableState::default();
-        table_state.select(Some(usize::MAX));
+        let table_state = TableState::default().with_selected(usize::MAX);
         Self { id, table_state }
     }
 }
