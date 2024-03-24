@@ -12,7 +12,7 @@ use clap_verbosity_flag::Verbosity;
 use log::error;
 use once_cell::sync::Lazy;
 use std::{error::Error, fs, io, path::Path};
-use toml_edit::{value, Document};
+use toml_edit::{value, DocumentMut};
 
 #[derive(Parser)]
 #[clap(name = "RustSBI Prototyping System")]
@@ -100,7 +100,7 @@ pub struct Config {
 
 fn save_app_to_string(app: &App, buf: &mut String) -> io::Result<()> {
     use serde_variant::to_variant_name;
-    let mut doc = buf.parse::<Document>().expect("invalid doc");
+    let mut doc = buf.parse::<DocumentMut>().expect("invalid doc");
     doc["locale"] = value(&app.locale);
     doc["bootstrap"] = value(to_variant_name(&app.bootstrap).unwrap());
     let StandardSbiEnabled {
