@@ -61,6 +61,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
             RouteId::Sophgo2002Series => ui::draw_sophgo_2002_series(f, app),
             RouteId::StandardSbiFeat => ui::draw_standard_sbi_features(f, app),
             RouteId::FdtIdent => ui::draw_fdt_ident(f, app),
+            RouteId::DynamicInfoIdent => ui::draw_dynamicinfo_ident(f, app),
             _ => todo!(),
         })?;
 

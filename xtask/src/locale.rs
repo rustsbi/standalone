@@ -36,7 +36,11 @@ static LOCALE: Lazy<HashMap<&'static str, HashMap<&'static str, &'static str>>> 
     ("machine-mode.title", [("zh-CN", " RustSBI 原型设计系统 - 机器态功能 "), ("en-US", " RustSBI Prototyping System - Machine mode features ")].into()),
     ("machine-mode.standard-sbi-feat", [("zh-CN", "标准 SBI 功能"), ("en-US", "Standard SBI features")].into()),
     ("machine-mode.fdt-ident", [("zh-CN", "设备树识别"), ("en-US", "Device Tree identification")].into()),
+    ("fdt-ident.fdt-ident-enabled", [("zh-CN", "启动设备树识别"), ("en-US", "Device Tree identification enabled")].into()),
+    ("fdt-ident.fdt-ident-enabled.enabled", [("zh-CN", "启动设备树识别"), ("en-US", "Device Tree identification enabled")].into()),
     ("machine-mode.dynamic-info-ident", [("zh-CN", "动态信息识别"), ("en-US", "Dynamic Information identification")].into()),
+    ("dynamic-info-ident.dynamic-info-ident-enabled", [("zh-CN", "启动动态信息识别"), ("en-US", "Dynamic Information identification enabled")].into()),
+    ("dynamic-info-ident.dynamic-info-ident-enabled.enabled", [("zh-CN", "启动动态信息识别"), ("en-US", "Dynamic Information identification enabled")].into()),
     ("machine-mode.not-supported", [("zh-CN", "启动程序不支持机器态功能"), ("en-US", "Bootstrap program does not support machine mode features")].into()),
     ("platform-support.title", [("zh-CN", " RustSBI 原型设计系统 - 平台支持 "), ("en-US", " RustSBI Prototyping System - Platform support ")].into()),
     ("platform-support.allwinner-d1-series", [("zh-CN", "全志® D1-H 系列平台"), ("en-US", "Allwinner® D1-H series")].into()),
@@ -62,8 +66,8 @@ static LOCALE: Lazy<HashMap<&'static str, HashMap<&'static str, &'static str>>> 
     ("standard-sbi-features.v2p0-prepared", [("zh-CN", "标准 SBI 2.0 实现"), ("en-US", "Standard SBI 2.0 implementation")].into()),
     ("standard-sbi-features.partial", [("zh-CN", "仅启用部分 SBI 扩展"), ("en-US", "Parital SBI extension(s) enabled")].into()),
     ("standard-sbi-features.no-support", [("zh-CN", "不支持 SBI 功能"), ("en-US", "No SBI features supported")].into()),
-    ("standard-sbi-features.enabled", [("zh-CN", "已启用"), ("en-US", "Enabled")].into()),
-    ("standard-sbi-features.disabled", [("zh-CN", "已禁用"), ("en-US", "Disabled")].into()),
+    ("enabled", [("zh-CN", "已启用"), ("en-US", "Enabled")].into()),
+    ("disabled", [("zh-CN", "已禁用"), ("en-US", "Disabled")].into()),
 ]));
 
 pub fn get_string(idx: &str, locale: &str) -> &'static str {
